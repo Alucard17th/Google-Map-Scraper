@@ -18,7 +18,7 @@
     "maxScrollsPerSearch": 2,
     "headless": true,
     "randomBreakInterval": 8,
-    "randomBreakDuration": 600000
+    "randomBreakDuration": 60000
   },
   "schedule": {
     "cronExpression": "0 3 * * *",
