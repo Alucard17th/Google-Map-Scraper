@@ -1,0 +1,33 @@
+{
+  "scrapingConfig": [
+    {
+      "businessType": "plombier",
+      "regions": ["Paris"],
+      "maxResults": 2,
+      "enabled": true
+    }
+  ],
+  "safetySettings": {
+    "dailyRequestLimit": 10,
+    "minDelayBetweenRequests": 3000,
+    "maxDelayBetweenRequests": 5000,
+    "minDelayBetweenRegions": 5000,
+    "maxDelayBetweenRegions": 8000,
+    "minDelayBetweenBusinessTypes": 8000,
+    "maxDelayBetweenBusinessTypes": 12000,
+    "maxScrollsPerSearch": 2,
+    "headless": true,
+    "randomBreakInterval": 5,
+    "randomBreakDuration": 300000
+  },
+  "schedule": {
+    "cronExpression": "0 3 * * *",
+    "timezone": "Europe/Paris",
+    "enabled": false
+  },
+  "output": {
+    "format": "json",
+    "directory": "Output",
+    "includeTimestamp": true
+  }
+}
