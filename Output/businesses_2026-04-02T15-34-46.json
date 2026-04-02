@@ -1,0 +1,42 @@
+[
+  {
+    "name": "L'Atelier du Plombier Paris",
+    "category": "Plombier",
+    "rating": "",
+    "phone": "+33 1 88 27 39 76",
+    "website": "https://atelierduplombier.com/",
+    "address": "100 Rue Alexandre Dumas, 75020 Paris, France"
+  },
+  {
+    "name": "Plombier André",
+    "category": "Plombier",
+    "rating": "",
+    "phone": "+33 1 44 72 08 49",
+    "website": "http://plombierparis15pascher.fr/",
+    "address": "65 Rue Blomet, 75015 Paris, France"
+  },
+  {
+    "name": "Arti-Pro Plombier",
+    "category": "Plombier",
+    "rating": "",
+    "phone": "+33 1 40 50 26 26",
+    "website": "https://artipro-plomberie.fr/",
+    "address": "1 Rue de l'Assomption, 75016 Paris, France"
+  },
+  {
+    "name": "Plombier Paris 11, LA PLATEFORME DES OUVRIERS, SOS Urgence Chauffagiste Paris 11 Pas Cher, Débouchage Canalisation, Dépannage",
+    "category": "Plombier",
+    "rating": "",
+    "phone": "+33 1 85 08 30 34",
+    "website": "http://artisan-emmanuel.fr/",
+    "address": "95 rue Sedaine, 3 Ave Parmentier, 75011 Paris, France"
+  },
+  {
+    "name": "Leroy plombier Paris 16",
+    "category": "Plombier",
+    "rating": "",
+    "phone": "+33 1 89 47 08 00",
+    "website": "https://www.leroy-plombier-paris-16.fr/",
+    "address": "11 Rue du Bouquet de Longchamp, 75116 Paris, France"
+  }
+]

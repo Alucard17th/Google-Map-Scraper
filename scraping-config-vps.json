@@ -1,0 +1,64 @@
+{
+  "scrapingConfig": [
+    {
+      "businessType": "plombier",
+      "regions": ["Paris", "Lyon", "Marseille", "Bordeaux", "Lille"],
+      "maxResults": 5,
+      "enabled": true
+    },
+    {
+      "businessType": "restaurant",
+      "regions": ["Paris", "Nice", "Cannes", "Strasbourg"],
+      "maxResults": 3,
+      "enabled": true
+    },
+    {
+      "businessType": "dentist",
+      "regions": ["Paris", "Lyon", "Toulouse", "Nice"],
+      "maxResults": 4,
+      "enabled": true
+    },
+    {
+      "businessType": "garage",
+      "regions": ["Paris", "Marseille", "Lyon", "Bordeaux"],
+      "maxResults": 4,
+      "enabled": false
+    },
+    {
+      "businessType": "avocat",
+      "regions": ["Paris", "Lyon", "Marseille"],
+      "maxResults": 3,
+      "enabled": false
+    }
+  ],
+  "safetySettings": {
+    "dailyRequestLimit": 25,
+    "minDelayBetweenRequests": 8000,
+    "maxDelayBetweenRequests": 15000,
+    "minDelayBetweenRegions": 20000,
+    "maxDelayBetweenRegions": 45000,
+    "minDelayBetweenBusinessTypes": 60000,
+    "maxDelayBetweenBusinessTypes": 120000,
+    "maxScrollsPerSearch": 2,
+    "headless": true,
+    "randomBreakInterval": 8,
+    "randomBreakDuration": 600000
+  },
+  "schedule": {
+    "cronExpression": "0 3 * * *",
+    "timezone": "Europe/Paris",
+    "enabled": true
+  },
+  "output": {
+    "format": "json",
+    "directory": "Output",
+    "includeTimestamp": true
+  },
+  "vps": {
+    "autoRestartOnError": true,
+    "maxRetries": 3,
+    "errorNotificationEmail": "",
+    "backupEnabled": true,
+    "backupInterval": "daily"
+  }
+}
