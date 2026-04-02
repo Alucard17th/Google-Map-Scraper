@@ -2,33 +2,9 @@
   "scrapingConfig": [
     {
       "businessType": "plombier",
-      "regions": ["Paris", "Lyon", "Marseille", "Bordeaux", "Lille"],
+      "regions": ["Marseille"],
       "maxResults": 5,
       "enabled": true
-    },
-    {
-      "businessType": "restaurant",
-      "regions": ["Paris", "Nice", "Cannes", "Strasbourg"],
-      "maxResults": 3,
-      "enabled": true
-    },
-    {
-      "businessType": "dentist",
-      "regions": ["Paris", "Lyon", "Toulouse", "Nice"],
-      "maxResults": 4,
-      "enabled": true
-    },
-    {
-      "businessType": "garage",
-      "regions": ["Paris", "Marseille", "Lyon", "Bordeaux"],
-      "maxResults": 4,
-      "enabled": false
-    },
-    {
-      "businessType": "avocat",
-      "regions": ["Paris", "Lyon", "Marseille"],
-      "maxResults": 3,
-      "enabled": false
     }
   ],
   "safetySettings": {
