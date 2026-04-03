@@ -1,0 +1,16 @@
+{
+  "scrapingConfig": [
+    {
+      "businessType": "plombier",
+      "regions": ["Clermont-Ferrand"],
+      "maxResults": 0,
+      "enabled": true
+    }
+  ],
+  "headless": true,
+  "delays": {
+    "betweenBusinesses": 3000,
+    "betweenRegions": 8000,
+    "betweenBusinessTypes": 12000
+  }
+}

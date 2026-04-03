@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Clermont Plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "8",
+    "phone": "+33 6 59 65 89 59",
+    "website": "",
+    "address": "41 Rue du Solayer, 63100 Clermont-Ferrand, France"
+  },
+  {
+    "name": "Rg Plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "5",
+    "phone": "Not found",
+    "website": "",
+    "address": "12 Rue du Terrail, 63000 Clermont-Ferrand, France"
+  },
+  {
+    "name": "Plomberie 63",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "12",
+    "phone": "+33 6 49 69 09 90",
+    "website": "",
+    "address": ""
+  },
+  {
+    "name": "Afonso Plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "3",
+    "phone": "+33 6 95 69 09 28",
+    "website": "",
+    "address": ""
+  },
+  {
+    "name": "AMDG PLOMBERIE CHAUFFAGE",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "15",
+    "phone": "+33 6 67 61 70 65",
+    "website": "",
+    "address": "42 Rue des Rivaux, 63170 Aubière, France"
+  },
+  {
+    "name": "Réseau Plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "16",
+    "phone": "+33 6 47 42 07 30",
+    "website": "",
+    "address": ""
+  },
+  {
+    "name": "Allo Plombier Mourgues",
+    "category": "Plombier",
+    "rating": "4.6",
+    "reviews": "34",
+    "phone": "+33 6 61 44 49 88",
+    "website": "",
+    "address": ""
+  },
+  {
+    "name": "plombier sanitaire SAINT-JEAN",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "12",
+    "phone": "+33 6 58 22 47 05",
+    "website": "",
+    "address": "12 Imp. le Clos des Puys, 63510 Aulnat, France"
+  },
+  {
+    "name": "Plomberie Christophe Bonnet",
+    "category": "Plombier",
+    "rating": "4.3",
+    "reviews": "6",
+    "phone": "+33 4 73 92 07 65",
+    "website": "",
+    "address": "56 Av. Raymond Bergougnan, 63100 Clermont-Ferrand, France"
+  },
+  {
+    "name": "Sarl Simon plomberie zinc",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": "40",
+    "phone": "+33 6 27 55 86 84",
+    "website": "",
+    "address": ""
+  },
+  {
+    "name": "MALEO Frères",
+    "category": "Plombier",
+    "rating": "3.9",
+    "reviews": "19",
+    "phone": "+33 4 73 91 64 60",
+    "website": "",
+    "address": "19 Av. de la Joselle, 63510 Malintrat, France"
+  },
+  {
+    "name": "Entreprise Pichot André et Cie",
+    "category": "Plombier",
+    "rating": "4.1",
+    "reviews": "25",
+    "phone": "+33 4 73 93 43 48",
+    "website": "",
+    "address": "13 bis Rue Pierre Boulanger, 63370 Lempdes, France"
+  }
+]
