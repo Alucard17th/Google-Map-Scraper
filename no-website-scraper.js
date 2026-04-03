@@ -19,6 +19,43 @@ try {
   process.exit(1);
 }
 
+// City tracking system
+const TRACKING_FILE = 'no-website-progress.json';
+
+// Load progress tracking
+function loadProgress() {
+  try {
+    if (fs.existsSync(TRACKING_FILE)) {
+      const progressData = fs.readFileSync(TRACKING_FILE, 'utf-8');
+      return JSON.parse(progressData);
+    }
+  } catch (err) {
+    console.log('⚠️  Error loading progress file, starting fresh');
+  }
+  return { completedCities: [], lastRun: null, totalBusinessesFound: 0 };
+}
+
+// Save progress tracking
+function saveProgress(completedCities, businessesFound) {
+  const progress = {
+    completedCities,
+    lastRun: new Date().toISOString(),
+    totalBusinessesFound: progress.totalBusinessesFound + businessesFound
+  };
+  try {
+    fs.writeFileSync(TRACKING_FILE, JSON.stringify(progress, null, 2));
+    console.log(`✅ Progress saved: ${completedCities.length} cities completed`);
+  } catch (err) {
+    console.error('❌ Error saving progress:', err.message);
+  }
+}
+
+// Get next batch of cities to process
+function getNextBatch(allCities, completedCities, batchSize = 10) {
+  const nextCities = allCities.filter(city => !completedCities.includes(city));
+  return nextCities.slice(0, batchSize);
+}
+
 class NoWebsiteScraper {
   constructor(headless = true) {
     this.headless = headless;
@@ -741,8 +778,13 @@ class NoWebsiteScraper {
 
 async function runNoWebsiteScraper() {
   console.log('🎯 ' + '='.repeat(60));
-  console.log('🎯 NO-WEBSITE BUSINESS SCRAPER');
+  console.log('🎯 NO-WEBSITE BUSINESS SCRAPER - BATCH MODE');
   console.log('🎯 ' + '='.repeat(60));
+  
+  // Load progress tracking
+  const progress = loadProgress();
+  console.log(`📊 Progress: ${progress.completedCities.length} cities already completed`);
+  console.log(`📊 Total businesses found so far: ${progress.totalBusinessesFound}`);
   
   const scraper = new NoWebsiteScraper(config.headless !== false);
   
@@ -759,13 +801,25 @@ async function runNoWebsiteScraper() {
         continue;
       }
       
+      // Get next batch of cities
+      const batchSize = businessConfig.batchSize || config.batchSize || 10;
+      const nextBatch = getNextBatch(businessConfig.regions, progress.completedCities, batchSize);
+      
+      if (nextBatch.length === 0) {
+        console.log(`\n🎉 All cities completed for ${businessConfig.businessType}!`);
+        continue;
+      }
+      
       console.log(`\n📍 ${i + 1}/${config.scrapingConfig.length}: ${businessConfig.businessType}`);
-      console.log(`🌍 Regions: ${businessConfig.regions.join(', ')}`);
+      console.log(`🏙️  Next batch (${nextBatch.length}/${batchSize} cities): ${nextBatch.join(', ')}`);
       console.log(`🎯 Max per region: ${businessConfig.maxResults}`);
       
-      for (let j = 0; j < businessConfig.regions.length; j++) {
-        const region = businessConfig.regions[j];
-        console.log(`\n🔍 Scraping ${businessConfig.businessType} in ${region} (${j + 1}/${businessConfig.regions.length})...`);
+      const newCompletedCities = [];
+      let batchBusinessesFound = 0;
+      
+      for (let j = 0; j < nextBatch.length; j++) {
+        const region = nextBatch[j];
+        console.log(`\n🔍 Scraping ${businessConfig.businessType} in ${region} (${j + 1}/${nextBatch.length})...`);
         
         try {
           const results = await scraper.searchBusinesses(
@@ -773,6 +827,9 @@ async function runNoWebsiteScraper() {
             region,
             businessConfig.maxResults
           );
+          
+          batchBusinessesFound += results.length;
+          newCompletedCities.push(region);
           
           console.log(`✅ Completed ${region}: Found ${results.length} businesses without websites`);
           console.log(`📊 Total businesses without websites so far: ${scraper.allBusinessesWithoutWebsite.length}`);
@@ -782,25 +839,37 @@ async function runNoWebsiteScraper() {
         }
         
         // Add delay between regions
-        if (j < businessConfig.regions.length - 1) {
-          const delay = 5000 + Math.random() * 5000;
+        if (j < nextBatch.length - 1) {
+          const delay = config.delays.betweenRegions || 15000;
           console.log(`🌍 Regional delay: ${Math.round(delay/1000)}s...`);
           await sleep(delay);
         }
       }
       
+      // Update progress
+      const updatedCompletedCities = [...progress.completedCities, ...newCompletedCities];
+      saveProgress(updatedCompletedCities, batchBusinessesFound);
+      
+      // Save results for this batch
+      if (batchBusinessesFound > 0) {
+        await scraper.saveResults();
+      }
+      
+      console.log(`\n📊 Batch Summary:`);
+      console.log(`   • Cities completed: ${newCompletedCities.length}`);
+      console.log(`   • Businesses found: ${batchBusinessesFound}`);
+      console.log(`   • Total progress: ${updatedCompletedCities.length}/${businessConfig.regions.length} cities`);
+      
       // Add delay between business types
       if (i < config.scrapingConfig.length - 1) {
-        const delay = 8000 + Math.random() * 7000;
+        const delay = config.delays.betweenBusinessTypes || 20000;
         console.log(`🏢 Business type delay: ${Math.round(delay/1000)}s...`);
         await sleep(delay);
       }
     }
     
-    await scraper.saveResults();
-    
     console.log('\n🎉 ' + '='.repeat(60));
-    console.log('🎉 NO-WEBSITE SCRAPING COMPLETE!');
+    console.log('🎉 BATCH SCRAPING COMPLETE!');
     console.log('🎉 ' + '='.repeat(60));
     
   } catch (error) {

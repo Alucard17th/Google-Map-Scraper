@@ -2,15 +2,60 @@
   "scrapingConfig": [
     {
       "businessType": "plombier",
-      "regions": ["Clermont-Ferrand"],
+      "regions": [
+        "Clermont-Ferrand",
+        "Limoges",
+        "Périgueux",
+        "Brive-la-Gaillarde",
+        "Tulle",
+        "Guéret",
+        "Montluçon",
+        "Vichy",
+        "Moulins",
+        "Bourges",
+        "Châteauroux",
+        "Issoudun",
+        "Le Blanc",
+        "Figeac",
+        "Decazeville",
+        "Rodez",
+        "Millau",
+        "Albi",
+        "Castres",
+        "Mende",
+        "Aurillac",
+        "Saint-Flour",
+        "Béziers",
+        "Narbonne",
+        "Carcassonne",
+        "Alès",
+        "Nîmes",
+        "Bagnols-sur-Cèze",
+        "Montélimar",
+        "Valence",
+        "Romans-sur-Isère",
+        "Gap",
+        "Briançon",
+        "Digne-les-Bains",
+        "Sisteron",
+        "Manosque",
+        "Cavaillon",
+        "Apt",
+        "Forcalquier",
+        "Sisteron",
+        "Gap",
+        "Briançon"
+      ],
       "maxResults": 0,
-      "enabled": true
+      "enabled": true,
+      "batchSize": 10
     }
   ],
   "headless": true,
   "delays": {
-    "betweenBusinesses": 3000,
-    "betweenRegions": 8000,
-    "betweenBusinessTypes": 12000
-  }
+    "betweenBusinesses": 5000,
+    "betweenRegions": 15000,
+    "betweenBusinessTypes": 20000
+  },
+  "batchSize": 10
 }
