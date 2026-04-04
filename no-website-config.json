@@ -48,7 +48,7 @@
       ],
       "maxResults": 0,
       "enabled": true,
-      "batchSize": 10
+      "batchSize": 1
     }
   ],
   "headless": true,
@@ -57,5 +57,5 @@
     "betweenRegions": 15000,
     "betweenBusinessTypes": 20000
   },
-  "batchSize": 10
+  "batchSize": 1
 }

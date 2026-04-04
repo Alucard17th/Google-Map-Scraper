@@ -36,11 +36,11 @@ function loadProgress() {
 }
 
 // Save progress tracking
-function saveProgress(completedCities, businessesFound) {
+function saveProgress(completedCities, businessesFound, currentProgress) {
   const progress = {
     completedCities,
     lastRun: new Date().toISOString(),
-    totalBusinessesFound: progress.totalBusinessesFound + businessesFound
+    totalBusinessesFound: (currentProgress?.totalBusinessesFound || 0) + businessesFound
   };
   try {
     fs.writeFileSync(TRACKING_FILE, JSON.stringify(progress, null, 2));
@@ -462,7 +462,8 @@ class NoWebsiteScraper {
         reviews: details.reviews || [],
         phone: details.phone || "Not found",
         website: details.website || "",
-        address: details.address || ""
+        address: details.address || "",
+        whatsappSent: false  // Track WhatsApp message status
       };
 
       await detailPage.close();
@@ -848,7 +849,7 @@ async function runNoWebsiteScraper() {
       
       // Update progress
       const updatedCompletedCities = [...progress.completedCities, ...newCompletedCities];
-      saveProgress(updatedCompletedCities, batchBusinessesFound);
+      saveProgress(updatedCompletedCities, batchBusinessesFound, progress);
       
       // Save results for this batch
       if (batchBusinessesFound > 0) {
