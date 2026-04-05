@@ -1,0 +1,300 @@
+[
+  {
+    "name": "EPP - Entreprise Périgueux plomberie",
+    "slug": "epp-entreprise-prigueux-plomberie",
+    "category": "Plombier",
+    "rating": "4.3",
+    "reviews": [
+      {
+        "author": "Christiane Real (Liane)",
+        "rating": "3",
+        "text": "Ne me recontacte pas ? Je suis pourtant une VRAIE cliente. Dommage.",
+        "date": "il y a 3 ans"
+      },
+      {
+        "author": "Jade Colomer",
+        "rating": "5",
+        "text": "Très professionnel je recommande !",
+        "date": "il y a 3 ans"
+      }
+    ],
+    "phone": "+33 6 58 31 85 96",
+    "website": "",
+    "address": "151 Rue Victor Hugo, 24000 Périgueux, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/epp-entreprise-prigueux-plomberie.png"
+  },
+  {
+    "name": "MP VAZ Plombier Périgueux",
+    "slug": "mp-vaz-plombier-prigueux",
+    "category": "Plombier",
+    "rating": "3.0",
+    "reviews": [
+      {
+        "author": "Cyril",
+        "rating": "5",
+        "text": "Travail sérieux et efficace. La rapidité d'intervention a été un réel plus. Le rapport qualité/prix est très correct. Je recommande sans hésitation.",
+        "date": "il y a 7 ans"
+      },
+      {
+        "author": "Elodie Akohouendo",
+        "rating": "5",
+        "text": "Rapidement disponible, ultra rapide! Une belle efficacité. Merci à lui!",
+        "date": "il y a 2 ans"
+      },
+      {
+        "author": "Thierry Vanné",
+        "rating": "1",
+        "text": "Attention, prix très élevés. Plus de 2000€ d'écart avec d'autres plombiers sur la totalité d'un devis.",
+        "date": "il y a 5 ans"
+      }
+    ],
+    "phone": "+33 6 79 65 00 11",
+    "website": "",
+    "address": "45 Rue Chanzy, 24000 Périgueux, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/mp-vaz-plombier-prigueux.png"
+  },
+  {
+    "name": "ASPC PLOMBERIE",
+    "slug": "aspc-plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Sophie Req",
+        "rating": "5",
+        "text": "Professionnel efficace, réactif, ponctuel et sympathique. Est intervenu très rapidement. Il prend le temps d'expliquer ce qu'il fait. …",
+        "date": "il y a un an"
+      },
+      {
+        "author": "Antoine Conte",
+        "rating": "5",
+        "text": "J’ai eu a faire a cette entreprise plusieurs fois, lors d'intervention au départ, ainsi qu’à de la maintenance. J’ai également effectué le changement d’une salle de bain en début d’année, ces conseils ont été précieux. Encore merci a vous M. Shaita.",
+        "date": "il y a 11 mois"
+      },
+      {
+        "author": "Alan Piron-Lafleur",
+        "rating": "5",
+        "text": "Super pro vraiment sympathique, rapide et qui prend bien soin du chantier et de tout faire proprement. …",
+        "date": "il y a un an"
+      }
+    ],
+    "phone": "+33 6 68 97 81 86",
+    "website": "",
+    "address": "",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/aspc-plomberie.png"
+  },
+  {
+    "name": "SLM Plombier Chauffagiste",
+    "slug": "slm-plombier-chauffagiste",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Anastasia Baumgarthen",
+        "rating": "5",
+        "text": "Merci, se sera le premier !",
+        "date": "il y a 5 mois"
+      }
+    ],
+    "phone": "+33 6 31 37 65 75",
+    "website": "",
+    "address": "",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/slm-plombier-chauffagiste.png"
+  },
+  {
+    "name": "Acp Filipe SARL",
+    "slug": "acp-filipe-sarl",
+    "category": "Plombier",
+    "rating": "4.8",
+    "reviews": [
+      {
+        "author": "pascale Gokelaere",
+        "rating": "5",
+        "text": "je recommande les yeux fermes cet artisan. j ai fait appel a lui pour la renovation de mon cabinet et le travail a ete a la hauteur de mes esperances …",
+        "date": "il y a 2 ans"
+      },
+      {
+        "author": "CHADOIN CHADOIN",
+        "rating": "4",
+        "text": "Un travail impeccable,des délais respectés, Un artisan à l'écoute des besoins... Bref un artisan comme on en fait plus beaucoup... …",
+        "date": "il y a 4 ans"
+      },
+      {
+        "author": "Jean-Luc Renouil",
+        "rating": "5",
+        "text": "ACP, comme le dit son responsable, c'est un travail de qualité. Du très bon boulot, un super contact, rien à redire !",
+        "date": "il y a 3 ans"
+      }
+    ],
+    "phone": "+33 6 15 34 88 56",
+    "website": "",
+    "address": "1 bis Rue Balzac, 24000 Périgueux, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/acp-filipe-sarl.png"
+  },
+  {
+    "name": "JBS PLOMBERIE",
+    "slug": "jbs-plomberie",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Karine Salziger",
+        "rating": "5",
+        "text": "Appelé la veille au soir pour une fuite compliquée à détecter, il a trouvé la possibilité de venir dès le lendemain et l'a réparée. Réactivité, ponctualité, compétence, politesse, écoute des besoins, gentillesse... Je recommande, et je ferai à nouveau appel à lui si besoin.",
+        "date": "il y a 6 mois"
+      },
+      {
+        "author": "okba fatima",
+        "rating": "5",
+        "text": "Plombier très professionnel et efficace. Intervention rapide, travail soigné et personne de confiance. Je recommande à 100 %",
+        "date": "il y a 4 mois"
+      },
+      {
+        "author": "Tokkidoki Dojo",
+        "rating": "5",
+        "text": "Très réactif et ponctuel. appeler pour une fuite sur mon ballon qui au final était hs , j'ai réussi à avoir un rendez-vous en urgence le lendemain pour avoir de l'eau chaude . Rapport qualité prix de la prestation je n'ai rien à dire et je recommande vivement ce plombier .",
+        "date": "il y a 10 mois"
+      }
+    ],
+    "phone": "+33 6 03 35 63 08",
+    "website": "",
+    "address": "13 Rue de Landry, 24750 Boulazac Isle Manoire, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/jbs-plomberie.png"
+  },
+  {
+    "name": "Pierre Aranda",
+    "slug": "pierre-aranda",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Alain Dohollou",
+        "rating": "5",
+        "text": "M Aranda s'est déplacé très rapidement et à effectué la réparation sur le chauffe eau sans imposer le changement complet de celui-ci. Bon diagnostic sur la panne . Je recommande vivement",
+        "date": "il y a 4 ans"
+      },
+      {
+        "author": "Yoan",
+        "rating": "5",
+        "text": "Entreprise très sérieuse : - Ponctuel, contact très agréable et sympathique, avec le sourire - Travail non seulement rapide mais très bien fait …",
+        "date": "il y a 4 ans"
+      },
+      {
+        "author": "Bernard",
+        "rating": "5",
+        "text": "M Aranda connaît son métier! Il est flexible, ponctuel et efficace. Nous sommes très satisfaits de son intervention.",
+        "date": "Modifié il y a 3 ans"
+      }
+    ],
+    "phone": "+33 6 14 74 44 48",
+    "website": "",
+    "address": "sur manoire, 13 Imp. Pierre Corneille, 24750 Boulazac Isle Manoire, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/pierre-aranda.png"
+  },
+  {
+    "name": "Entreprise Certaines",
+    "slug": "entreprise-certaines",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "OCTOPUS BUSINESS",
+        "rating": "5",
+        "text": "Entreprise très sérieuse, accompagnement au top, prestations impeccables, travail soigné et rapide. Nous recommandons à 100 % Mr De Certaines.",
+        "date": "il y a 5 mois"
+      },
+      {
+        "author": "Franck Bourrel",
+        "rating": "5",
+        "text": "Entreprise très sérieuse. Service professionnel et réactif. Excellent rapport qualité prix. A recommander sans réserve",
+        "date": "il y a 2 mois"
+      },
+      {
+        "author": "Macs",
+        "rating": "5",
+        "text": "Professionnel agréé RGE. Contacté il y a quelques années pour le domicile de mon père afin de changer le chauffe-eau par un nouveau à condensation moins énergivore, ainsi que la remise aux normes de l'évacuation, nouveau thermostat et sonde …",
+        "date": "il y a 7 mois"
+      }
+    ],
+    "phone": "+33 6 65 19 93 96",
+    "website": "",
+    "address": "13 Rte de la Jarthe, 24750 Trélissac, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/entreprise-certaines.png"
+  },
+  {
+    "name": "Adi Plomberie",
+    "slug": "adi-plomberie",
+    "category": "Ajouter le numéro de téléphone du lieu",
+    "rating": "",
+    "reviews": [],
+    "phone": "Not found",
+    "website": "",
+    "address": "3 Rue des Basques, 24750 Périgueux, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/adi-plomberie.png"
+  },
+  {
+    "name": "Stéphane NAREZZY",
+    "slug": "stphane-narezzy",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Jacques Couzinou",
+        "rating": "5",
+        "text": "Prestation de qualité, travail propre et soigné.",
+        "date": "il y a 5 mois"
+      },
+      {
+        "author": "Aurian Coudert",
+        "rating": "5",
+        "text": "Suite à une panne de groupe sécurité chauffe eau personne Très réactif, très agréable, travail au top vous pouvez y aller les yeux fermés encore merci pour le déplacement surtout un samedi 👍 …",
+        "date": "il y a 2 ans"
+      }
+    ],
+    "phone": "+33 6 71 15 83 08",
+    "website": "",
+    "address": "37 Rte d'Agonac, 24000 Périgueux, France",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/stphane-narezzy.png"
+  },
+  {
+    "name": "A.L'eau24",
+    "slug": "aleau24",
+    "category": "Plombier",
+    "rating": "5.0",
+    "reviews": [
+      {
+        "author": "Ciham Bakazza",
+        "rating": "5",
+        "text": "Une personne très réactif honnête est vraiment très agréable qui fait un travail propre je recommande",
+        "date": "il y a une semaine"
+      },
+      {
+        "author": "Axel Gobert",
+        "rating": "5",
+        "text": "Plombier très professionnel, efficace et toujours avec le sourire, je ne peux que recommander",
+        "date": "il y a 2 semaines"
+      },
+      {
+        "author": "Michel Cade",
+        "rating": "5",
+        "text": "Plombier très rapide et efficace à recommander",
+        "date": "il y a 2 semaines"
+      }
+    ],
+    "phone": "+33 6 18 87 62 95",
+    "website": "",
+    "address": "",
+    "whatsappSent": false,
+    "screenshotUrl": "./Screenshots/aleau24.png"
+  }
+]

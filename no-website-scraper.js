@@ -454,9 +454,21 @@ class NoWebsiteScraper {
         details.reviews = []; // Skip reviews for businesses with websites
       }
 
+      // Create slug from name
+      function createSlug(name) {
+        if (!name || name === "Not found") return "not-found";
+        return name
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .trim();
+      }
+
       // Create standardized object with exact field order as scraper.js
       const standardizedDetails = {
         name: details.name || "Not found",
+        slug: createSlug(details.name),
         category: details.category || "Not found", 
         rating: details.rating || "",
         reviews: details.reviews || [],
@@ -613,9 +625,20 @@ class NoWebsiteScraper {
             };
           }, reviewElements[i]);
 
+          // Only add review if it has text and isn't a duplicate
           if (review.text && review.text.length > 0) {
-            reviews.push(review);
-            console.log(`✅ Review ${i + 1}: ${review.author} - ${review.rating} stars`);
+            // Check for duplicates based on author + text combination
+            const isDuplicate = reviews.some(existingReview => 
+              existingReview.author === review.author && 
+              existingReview.text === review.text
+            );
+            
+            if (!isDuplicate) {
+              reviews.push(review);
+              console.log(`✅ Review ${reviews.length}: ${review.author} - ${review.rating} stars`);
+            } else {
+              console.log(`⏭️  Skipping duplicate review: ${review.author}`);
+            }
           }
         } catch (err) {
           console.log(`Error extracting review ${i + 1}: ${err.message}`);

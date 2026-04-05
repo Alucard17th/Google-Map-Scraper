@@ -1,7 +1,9 @@
 {
   "completedCities": [
-    "Clermont-Ferrand"
+    "Clermont-Ferrand",
+    "Limoges",
+    "Périgueux"
   ],
-  "lastRun": "2026-04-03T20:21:43.600Z",
-  "totalBusinessesFound": 10
+  "lastRun": "2026-04-05T18:44:20.238Z",
+  "totalBusinessesFound": 29
 }
