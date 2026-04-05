@@ -1,3 +1,9 @@
 node_modules/
 scrap.js
+.env
+Output/
+*.log
+.DS_Store
+.vscode/
+.idea/
 error.txt
