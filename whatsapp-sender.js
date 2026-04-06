@@ -14,6 +14,89 @@ class WhatsAppSender {
     this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
     this.yourName = process.env.YOUR_NAME || 'Your Name';
     this.yourPhone = process.env.YOUR_PHONE || '+33612345678';
+    this.logFile = 'Output/whatsapp-sending-log.json';
+  }
+
+  async logMessage(business, result, messageType = 'campaign') {
+    try {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        messageType: messageType,
+        business: {
+          name: business.name,
+          slug: business.slug,
+          phone: business.phone,
+          category: business.category,
+          rating: business.rating
+        },
+        result: {
+          success: result.success,
+          error: result.error || null,
+          data: result.data || null
+        },
+        messagePreview: this.createBusinessMessage(business).substring(0, 100) + '...'
+      };
+
+      // Read existing logs
+      let logs = [];
+      try {
+        if (fs.existsSync(this.logFile)) {
+          const existingLogs = fs.readFileSync(this.logFile, 'utf8');
+          logs = JSON.parse(existingLogs);
+        }
+      } catch (error) {
+        console.log('📝 Creating new log file');
+      }
+
+      // Add new entry
+      logs.push(logEntry);
+
+      // Keep only last 1000 entries to prevent file from getting too large
+      if (logs.length > 1000) {
+        logs = logs.slice(-1000);
+      }
+
+      // Write logs
+      fs.writeFileSync(this.logFile, JSON.stringify(logs, null, 2));
+      
+      console.log(`📝 Logged message for ${business.name}: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    } catch (error) {
+      console.error('❌ Error logging message:', error.message);
+    }
+  }
+
+  async getSendingStats() {
+    try {
+      if (!fs.existsSync(this.logFile)) {
+        return { total: 0, sent: 0, failed: 0, lastUpdated: null };
+      }
+
+      const logs = JSON.parse(fs.readFileSync(this.logFile, 'utf8'));
+      const stats = {
+        total: logs.length,
+        sent: logs.filter(log => log.result.success).length,
+        failed: logs.filter(log => !log.result.success).length,
+        lastUpdated: logs.length > 0 ? logs[logs.length - 1].timestamp : null,
+        recentFailures: logs.filter(log => !log.result.success).slice(-5),
+        recentSuccess: logs.filter(log => log.result.success).slice(-5)
+      };
+
+      return stats;
+    } catch (error) {
+      console.error('❌ Error reading logs:', error.message);
+      return { total: 0, sent: 0, failed: 0, lastUpdated: null };
+    }
+  }
+
+  async clearLogs() {
+    try {
+      if (fs.existsSync(this.logFile)) {
+        fs.unlinkSync(this.logFile);
+        console.log('🗑️  Logs cleared successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error clearing logs:', error.message);
+    }
   }
 
   async sendWhatsAppMessage(number, message) {
@@ -144,6 +227,7 @@ class WhatsAppSender {
       if (result.success) {
         sentCount++;
         await this.updateBusinessWhatsAppStatus(business.slug, true);
+        await this.logMessage(business, result, 'campaign');
         
         // Add delay between messages to avoid spam detection
         if (i < businessesToContact.length - 1) {
@@ -154,6 +238,7 @@ class WhatsAppSender {
       } else {
         failedCount++;
         await this.updateBusinessWhatsAppStatus(business.slug, false);
+        await this.logMessage(business, result, 'campaign');
       }
     }
 
@@ -210,6 +295,16 @@ class WhatsAppSender {
     
     const result = await this.sendWhatsAppMessage(phone, testMessage);
     
+    // Log test message
+    const testBusiness = {
+      name: 'Test Message',
+      slug: 'test-message',
+      phone: phone,
+      category: 'Test',
+      rating: 5
+    };
+    await this.logMessage(testBusiness, result, 'test');
+    
     if (result.success) {
       console.log(`✅ Simple test message sent successfully to ${phone}`);
     } else {
@@ -241,6 +336,9 @@ class WhatsAppSender {
     
     // Send the message
     const result = await this.sendWhatsAppMessage(phone, message);
+    
+    // Log the test message
+    await this.logMessage(business, result, 'test');
     
     if (result.success) {
       console.log(`✅ Business message sent successfully to ${phone}`);
@@ -346,6 +444,34 @@ async function main() {
         await sender.getStats();
         break;
 
+      case 'logs':
+        const logStats = await sender.getSendingStats();
+        console.log('📊 WhatsApp Sending Logs Statistics:');
+        console.log(`   📋 Total messages: ${logStats.total}`);
+        console.log(`   ✅ Successful: ${logStats.sent}`);
+        console.log(`   ❌ Failed: ${logStats.failed}`);
+        console.log(`   📅 Last updated: ${logStats.lastUpdated || 'No logs yet'}`);
+        
+        if (logStats.recentFailures.length > 0) {
+          console.log('\n❌ Recent Failures:');
+          logStats.recentFailures.forEach((log, index) => {
+            console.log(`   ${index + 1}. ${log.business.name} - ${log.timestamp}`);
+            console.log(`      Error: ${log.result.error}`);
+          });
+        }
+        
+        if (logStats.recentSuccess.length > 0) {
+          console.log('\n✅ Recent Success:');
+          logStats.recentSuccess.forEach((log, index) => {
+            console.log(`   ${index + 1}. ${log.business.name} - ${log.timestamp}`);
+          });
+        }
+        break;
+
+      case 'clear-logs':
+        await sender.clearLogs();
+        break;
+
       default:
         console.log('📖 Available commands:');
         console.log('  npm run whatsapp test <phone>           - Send actual business message test');
@@ -354,12 +480,16 @@ async function main() {
         console.log('  npm run whatsapp send-all                - Send to all businesses');
         console.log('  npm run whatsapp business <slug>         - Send to specific business');
         console.log('  npm run whatsapp stats                   - Show campaign statistics');
+        console.log('  npm run whatsapp logs                    - Show sending logs and statistics');
+        console.log('  npm run whatsapp clear-logs              - Clear all sending logs');
         console.log('');
         console.log('💡 Examples:');
         console.log('  npm run whatsapp test 212707673488');
         console.log('  npm run whatsapp test-simple 212707673488');
         console.log('  npm run whatsapp send 5');
         console.log('  npm run whatsapp business epp-entreprise-prigueux-plomberie');
+        console.log('  npm run whatsapp logs');
+        console.log('  npm run whatsapp clear-logs');
         break;
     }
   } catch (error) {
