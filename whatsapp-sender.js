@@ -12,6 +12,8 @@ class WhatsAppSender {
     this.apiKey = process.env.EVOLUTION_API_KEY;
     this.apiUrl = process.env.EVOLUTION_API_URL || 'https://business.grow-with-tools.com/message/sendText/wa1';
     this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    this.yourName = process.env.YOUR_NAME || 'Your Name';
+    this.yourPhone = process.env.YOUR_PHONE || '+33612345678';
   }
 
   async sendWhatsAppMessage(number, message) {
@@ -66,20 +68,15 @@ class WhatsAppSender {
   }
 
   createBusinessMessage(business) {
-    const { name, category, rating, reviews, address, screenshotUrl, slug } = business;
+    const { name, category, rating, reviews, address, slug } = business;
     
     // Format phone number (remove +, spaces, etc.)
     const cleanPhone = business.phone.replace(/[^\d]/g, '');
     
     // Create compelling message with preview link
     let message = `🔧 *Proposition de Site Web Professionnel*\n\n`;
-    message += `Bonjour ! Je suis ${name}, ${category} à ${address?.split(',')[0] || 'votre ville'}.\n\n`;
+    message += `Bonjour ! Je suis ${this.yourName}, et j'ai remarqué que ${name}, ${category} à ${address?.split(',')[0] || 'votre ville'} n'a pas de site web.\n\n`;
     message += `⭐ *Note*: ${rating}/5 avec ${reviews.length} avis clients\n\n`;
-    
-    if (reviews.length > 0) {
-      const topReview = reviews[0];
-      message += `💬 *"${topReview.text.substring(0, 100)}..."* - ${topReview.author}\n\n`;
-    }
     
     message += `🌐 *Je vous propose une solution web complète pour:*\n`;
     message += `• Présence professionnelle en ligne\n`;
@@ -88,15 +85,11 @@ class WhatsAppSender {
     message += `• Mise en avant de vos excellents avis\n\n`;
     
     message += `📱 *Contactez-moi pour discuter de votre projet!*\n`;
-    message += `Téléphone: ${business.phone}\n\n`;
+    message += `Téléphone: ${this.yourPhone}\n\n`;
     
     // Add preview link
     const previewUrl = `https://preview.grow-with-tools.com/${slug}`;
-    message += `🔗 *Voir votre futur site web:*\n${previewUrl}\n\n`;
-    
-    if (screenshotUrl) {
-      message += `📸 *Exemple de réalisation:* ${this.apiBaseUrl}/screenshots/${path.basename(screenshotUrl)}`;
-    }
+    message += `🔗 *Voir votre futur site web:*\n${previewUrl}`;
     
     return message;
   }
