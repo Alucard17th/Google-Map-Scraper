@@ -46,16 +46,16 @@
         "Gap",
         "Briançon"
       ],
-      "maxResults": 0,
+      "maxResults": 30,
       "enabled": true,
-      "batchSize": 1
+      "batchSize": 3
     }
   ],
   "headless": true,
   "delays": {
-    "betweenBusinesses": 5000,
-    "betweenRegions": 15000,
-    "betweenBusinessTypes": 20000
+    "betweenBusinesses": 8000,
+    "betweenRegions": 20000,
+    "betweenBusinessTypes": 30000
   },
-  "batchSize": 1
+  "batchSize": 3
 }
