@@ -210,17 +210,49 @@ class WhatsAppSender {
     return result;
   }
 
-  async testMessage(phone) {
-    console.log(`🧪 Testing WhatsApp message to ${phone}`);
+  async testSimpleMessage(phone) {
+    console.log(`🧪 Testing simple WhatsApp message to ${phone}`);
     
     const testMessage = `🔧 *Test Message - Proposition de Site Web*\n\nCeci est un message test pour vérifier que l'API WhatsApp fonctionne correctement.\n\n🔗 *Exemple de preview:* https://preview.grow-with-tools.com/epp-entreprise-prigueux-plomberie\n\nSi vous recevez ce message, votre système est prêt pour la campagne! 🚀`;
     
     const result = await this.sendWhatsAppMessage(phone, testMessage);
     
     if (result.success) {
-      console.log(`✅ Test message sent successfully to ${phone}`);
+      console.log(`✅ Simple test message sent successfully to ${phone}`);
     } else {
-      console.error(`❌ Test message failed:`, result.error);
+      console.error(`❌ Simple test message failed:`, result.error);
+    }
+    
+    return result;
+  }
+
+  async testBusinessMessage(phone, slug = 'epp-entreprise-prigueux-plomberie') {
+    console.log(`🧪 Testing business message to ${phone} using business: ${slug}`);
+    
+    // Get the actual business data
+    const businesses = await this.getBusinesses();
+    const business = businesses.find(b => b.slug === slug);
+    
+    if (!business) {
+      console.error(`❌ Business not found: ${slug}`);
+      return { success: false, error: 'Business not found' };
+    }
+    
+    // Create the exact message that would be sent to this business
+    const message = this.createBusinessMessage(business);
+    
+    console.log(`📱 Message preview for ${business.name}:`);
+    console.log('-'.repeat(50));
+    console.log(message);
+    console.log('-'.repeat(50));
+    
+    // Send the message
+    const result = await this.sendWhatsAppMessage(phone, message);
+    
+    if (result.success) {
+      console.log(`✅ Business message sent successfully to ${phone}`);
+    } else {
+      console.error(`❌ Business message failed:`, result.error);
     }
     
     return result;
@@ -285,7 +317,17 @@ async function main() {
           console.log('💡 Usage: npm run whatsapp test 212707673488');
           process.exit(1);
         }
-        await sender.testMessage(testPhone);
+        await sender.testBusinessMessage(testPhone);
+        break;
+
+      case 'test-simple':
+        const simplePhone = args[1];
+        if (!simplePhone) {
+          console.error('❌ Please provide a phone number for testing');
+          console.log('💡 Usage: npm run whatsapp test-simple 212707673488');
+          process.exit(1);
+        }
+        await sender.testSimpleMessage(simplePhone);
         break;
 
       case 'send':
@@ -313,14 +355,16 @@ async function main() {
 
       default:
         console.log('📖 Available commands:');
-        console.log('  npm run whatsapp test <phone>     - Send test message');
-        console.log('  npm run whatsapp send [limit]    - Send to businesses (skip sent)');
-        console.log('  npm run whatsapp send-all        - Send to all businesses');
-        console.log('  npm run whatsapp business <slug> - Send to specific business');
-        console.log('  npm run whatsapp stats           - Show campaign statistics');
+        console.log('  npm run whatsapp test <phone>           - Send actual business message test');
+        console.log('  npm run whatsapp test-simple <phone>     - Send simple test message');
+        console.log('  npm run whatsapp send [limit]           - Send to businesses (skip sent)');
+        console.log('  npm run whatsapp send-all                - Send to all businesses');
+        console.log('  npm run whatsapp business <slug>         - Send to specific business');
+        console.log('  npm run whatsapp stats                   - Show campaign statistics');
         console.log('');
         console.log('💡 Examples:');
         console.log('  npm run whatsapp test 212707673488');
+        console.log('  npm run whatsapp test-simple 212707673488');
         console.log('  npm run whatsapp send 5');
         console.log('  npm run whatsapp business epp-entreprise-prigueux-plomberie');
         break;
