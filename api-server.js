@@ -111,6 +111,8 @@ app.get('/api/businesses', (req, res) => {
       businesses = mergedData.businesses;
       sourceFile = 'all-businesses-merged.json';
       console.log(`Loaded ${businesses.length} businesses from merged file`);
+      console.log('Businesses type:', typeof businesses);
+      console.log('Businesses is array:', Array.isArray(businesses));
     } else {
       // Fallback to latest individual file
       const latestFile = getLatestJsonFile();
@@ -126,6 +128,16 @@ app.get('/api/businesses', (req, res) => {
       const data = JSON.parse(jsonData);
       businesses = data.businesses || data; // Handle both merged and regular format
       sourceFile = latestFile.filename;
+    }
+    
+    // Ensure businesses is an array
+    if (!Array.isArray(businesses)) {
+      console.error('Businesses is not an array:', typeof businesses);
+      console.error('Businesses value:', businesses);
+      return res.status(500).json({
+        error: 'Data format error',
+        message: 'Businesses data is not in expected array format'
+      });
     }
     
     console.log(`Businesses type: ${typeof businesses}, length: ${businesses.length}`);
@@ -155,6 +167,7 @@ app.get('/api/businesses', (req, res) => {
     });
   } catch (error) {
     console.error('Error loading businesses:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message
