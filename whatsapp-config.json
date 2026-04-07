@@ -1,0 +1,31 @@
+{
+  "whatsappConfig": [
+    {
+      "campaignType": "no-website-businesses",
+      "batchSize": 5,
+      "maxMessagesPerHour": 30,
+      "enabled": true,
+      "skipAlreadySent": true,
+      "messageDelay": {
+        "min": 5000,
+        "max": 10000
+      },
+      "workingHours": {
+        "start": "09:00",
+        "end": "19:00",
+        "weekends": false
+      }
+    }
+  ],
+  "globalSettings": {
+    "pauseOnFailure": true,
+    "maxRetries": 3,
+    "logLevel": "info",
+    "autoSaveProgress": true
+  },
+  "messageTemplates": {
+    "testMode": false,
+    "dryRun": false,
+    "previewOnly": false
+  }
+}

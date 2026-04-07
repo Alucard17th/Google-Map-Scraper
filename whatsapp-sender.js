@@ -1,4 +1,3 @@
-// WhatsApp Message Sender for Business Proposals
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
@@ -15,6 +14,114 @@ class WhatsAppSender {
     this.yourName = process.env.YOUR_NAME || 'Your Name';
     this.yourPhone = process.env.YOUR_PHONE || '+33612345678';
     this.logFile = 'Output/whatsapp-sending-log.json';
+    this.progressFile = 'Output/whatsapp-progress.json';
+    this.configFile = 'whatsapp-config.json';
+    
+    // Load configuration
+    this.config = this.loadConfig();
+  }
+
+  loadConfig() {
+    try {
+      const configData = JSON.parse(fs.readFileSync(this.configFile, 'utf8'));
+      return configData;
+    } catch (error) {
+      console.log('📝 Creating new WhatsApp config file');
+      return {
+        whatsappConfig: [{
+          campaignType: 'no-website-businesses',
+          batchSize: 5,
+          maxMessagesPerHour: 30,
+          enabled: true,
+          skipAlreadySent: true,
+          messageDelay: { min: 5000, max: 10000 }
+        }],
+        globalSettings: {
+          pauseOnFailure: true,
+          maxRetries: 3,
+          logLevel: 'info',
+          autoSaveProgress: true
+        }
+      };
+    }
+  }
+
+  async loadProgress() {
+    try {
+      if (fs.existsSync(this.progressFile)) {
+        const progress = JSON.parse(fs.readFileSync(this.progressFile, 'utf8'));
+        return progress;
+      }
+    } catch (error) {
+      console.log('📝 Creating new WhatsApp progress file');
+    }
+    
+    return {
+      completedBusinesses: [],
+      lastRun: null,
+      totalMessagesSent: 0,
+      totalMessagesFailed: 0,
+      currentBatch: 0,
+      campaignStats: {
+        totalProcessed: 0,
+        successRate: 0,
+        averageResponseTime: 0
+      }
+    };
+  }
+
+  async saveProgress(progress) {
+    try {
+      progress.lastRun = new Date().toISOString();
+      fs.writeFileSync(this.progressFile, JSON.stringify(progress, null, 2));
+      console.log('✅ WhatsApp progress saved');
+    } catch (error) {
+      console.error('❌ Error saving WhatsApp progress:', error.message);
+    }
+  }
+
+  async getBusinesses() {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/api/businesses`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const businesses = await response.json();
+      console.log(`📊 Loaded ${businesses.length} businesses from API`);
+      return businesses;
+    } catch (error) {
+      console.error('❌ Error fetching businesses:', error.message);
+      throw error;
+    }
+  }
+
+  async sendWhatsAppMessage(number, message) {
+    try {
+      const response = await fetch(this.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.apiKey
+        },
+        body: JSON.stringify({
+          number: number,
+          text: message
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log(`✅ Message sent successfully to ${number}`);
+        return { success: true, data: result };
+      } else {
+        console.error(`❌ Failed to send message to ${number}:`, result);
+        return { success: false, error: result };
+      }
+    } catch (error) {
+      console.error(`❌ Error sending message to ${number}:`, error.message);
+      return { success: false, error: error.message };
+    }
   }
 
   async logMessage(business, result, messageType = 'campaign') {
@@ -65,96 +172,8 @@ class WhatsAppSender {
     }
   }
 
-  async getSendingStats() {
-    try {
-      if (!fs.existsSync(this.logFile)) {
-        return { total: 0, sent: 0, failed: 0, lastUpdated: null };
-      }
-
-      const logs = JSON.parse(fs.readFileSync(this.logFile, 'utf8'));
-      const stats = {
-        total: logs.length,
-        sent: logs.filter(log => log.result.success).length,
-        failed: logs.filter(log => !log.result.success).length,
-        lastUpdated: logs.length > 0 ? logs[logs.length - 1].timestamp : null,
-        recentFailures: logs.filter(log => !log.result.success).slice(-5),
-        recentSuccess: logs.filter(log => log.result.success).slice(-5)
-      };
-
-      return stats;
-    } catch (error) {
-      console.error('❌ Error reading logs:', error.message);
-      return { total: 0, sent: 0, failed: 0, lastUpdated: null };
-    }
-  }
-
-  async clearLogs() {
-    try {
-      if (fs.existsSync(this.logFile)) {
-        fs.unlinkSync(this.logFile);
-        console.log('🗑️  Logs cleared successfully');
-      }
-    } catch (error) {
-      console.error('❌ Error clearing logs:', error.message);
-    }
-  }
-
-  async sendWhatsAppMessage(number, message) {
-    try {
-      const response = await fetch(this.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': this.apiKey
-        },
-        body: JSON.stringify({
-          number: number,
-          text: message
-        })
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        console.log(`✅ Message sent successfully to ${number}`);
-        return { success: true, data: result };
-      } else {
-        console.error(`❌ Failed to send message to ${number}:`, result);
-        return { success: false, error: result };
-      }
-    } catch (error) {
-      console.error(`❌ Error sending message to ${number}:`, error.message);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async getBusinesses() {
-    try {
-      const response = await fetch(`${this.apiBaseUrl}/api/businesses`);
-      const data = await response.json();
-      return data.businesses || [];
-    } catch (error) {
-      console.error('❌ Error fetching businesses:', error.message);
-      return [];
-    }
-  }
-
-  async updateBusinessWhatsAppStatus(slug, sent = true) {
-    try {
-      // This would update the local JSON file - for now just log
-      console.log(`📝 Updated WhatsApp status for ${slug}: ${sent ? 'sent' : 'failed'}`);
-      return true;
-    } catch (error) {
-      console.error(`❌ Error updating WhatsApp status for ${slug}:`, error.message);
-      return false;
-    }
-  }
-
   createBusinessMessage(business) {
     const { name, category, rating, reviews, address, slug } = business;
-    
-    // Format phone number (remove +, spaces, etc.)
-    const cleanPhone = business.phone.replace(/[^\d]/g, '');
     
     // Create compelling message with preview link
     let message = `🔧 *Proposition de Site Web Professionnel*\n\n`;
@@ -180,65 +199,81 @@ class WhatsAppSender {
   async sendToAllBusinesses(limit = null, skipSent = true) {
     console.log('🚀 Starting WhatsApp message campaign...');
     
+    const progress = await this.loadProgress();
     const businesses = await this.getBusinesses();
-    console.log(`📊 Found ${businesses.length} businesses`);
-
-    // Filter businesses
-    let businessesToContact = businesses;
     
-    if (skipSent) {
-      businessesToContact = businesses.filter(b => !b.whatsappSent);
-      console.log(`📋 ${businessesToContact.length} businesses haven't been contacted yet`);
-    }
+    // Filter businesses based on skip setting and progress
+    let businessesToContact = skipSent ? 
+      businesses.filter(b => !progress.completedBusinesses.includes(b.slug)) : 
+      businesses;
     
     if (limit) {
       businessesToContact = businessesToContact.slice(0, limit);
-      console.log(`🎯 Limiting to ${businessesToContact.length} businesses`);
     }
 
-    if (businessesToContact.length === 0) {
-      console.log('ℹ️  No businesses to contact');
-      return { sent: 0, failed: 0, total: 0 };
-    }
+    const config = this.config.whatsappConfig[0];
+    const batchSize = config.batchSize;
+    
+    console.log(`📊 Found ${businessesToContact.length} businesses to contact`);
+    console.log(`📦 Batch size: ${batchSize}`);
 
     let sentCount = 0;
     let failedCount = 0;
 
-    for (let i = 0; i < businessesToContact.length; i++) {
-      const business = businessesToContact[i];
+    // Process in batches
+    for (let batchStart = 0; batchStart < businessesToContact.length; batchStart += batchSize) {
+      const batchEnd = Math.min(batchStart + batchSize, businessesToContact.length);
+      const batch = businessesToContact.slice(batchStart, batchEnd);
       
-      console.log(`\n📱 ${i + 1}/${businessesToContact.length} - Contacting ${business.name}`);
-      
-      // Clean phone number
-      const cleanPhone = business.phone.replace(/[^\d]/g, '');
-      
-      if (!cleanPhone || cleanPhone.length < 10) {
-        console.log(`⚠️  Invalid phone number: ${business.phone}`);
-        failedCount++;
-        continue;
-      }
+      console.log(`\n📦 Batch ${Math.floor(batchStart/batchSize) + 1}: Processing ${batch.length} businesses (${batchStart + 1}-${batchEnd}/${businessesToContact.length})`);
 
-      // Create personalized message
-      const message = this.createBusinessMessage(business);
-      
-      // Send message
-      const result = await this.sendWhatsAppMessage(cleanPhone, message);
-      
-      if (result.success) {
-        sentCount++;
-        await this.updateBusinessWhatsAppStatus(business.slug, true);
-        await this.logMessage(business, result, 'campaign');
+      for (let i = 0; i < batch.length; i++) {
+        const business = batch[i];
         
-        // Add delay between messages to avoid spam detection
-        if (i < businessesToContact.length - 1) {
-          const delay = Math.random() * 5000 + 5000; // 5-10 seconds random delay
+        console.log(`\n📱 ${batchStart + i + 1}/${businessesToContact.length} - Contacting ${business.name}`);
+        
+        // Clean phone number
+        const cleanPhone = business.phone.replace(/[^\d]/g, '');
+        
+        if (!cleanPhone || cleanPhone.length < 10) {
+          console.log(`⚠️  Invalid phone number: ${business.phone}`);
+          failedCount++;
+          continue;
+        }
+
+        // Create personalized message
+        const message = this.createBusinessMessage(business);
+        
+        // Send message
+        const result = await this.sendWhatsAppMessage(cleanPhone, message);
+        
+        if (result.success) {
+          sentCount++;
+          await this.logMessage(business, result, 'campaign');
+          progress.completedBusinesses.push(business.slug);
+        } else {
+          failedCount++;
+          await this.logMessage(business, result, 'campaign');
+        }
+
+        // Add delay between messages
+        if (i < batch.length - 1 || batchEnd < businessesToContact.length) {
+          const delay = Math.random() * (config.messageDelay.max - config.messageDelay.min) + config.messageDelay.min;
           console.log(`⏳ Waiting ${Math.round(delay/1000)}s before next message...`);
           await this.sleep(delay);
         }
-      } else {
-        failedCount++;
-        await this.updateBusinessWhatsAppStatus(business.slug, false);
-        await this.logMessage(business, result, 'campaign');
+      }
+
+      // Save progress after each batch
+      progress.totalMessagesSent = sentCount;
+      progress.totalMessagesFailed = failedCount;
+      progress.currentBatch = Math.floor(batchStart/batchSize) + 1;
+      await this.saveProgress(progress);
+
+      // Add delay between batches
+      if (batchEnd < businessesToContact.length) {
+        console.log(`\n🌍 Batch completed. Waiting 30s before next batch...`);
+        await this.sleep(30000);
       }
     }
 
@@ -250,48 +285,10 @@ class WhatsAppSender {
     return { sent: sentCount, failed: failedCount, total: businessesToContact.length };
   }
 
-  async sendToSpecificBusiness(slug) {
-    console.log(`🎯 Sending WhatsApp message to specific business: ${slug}`);
-    
-    const businesses = await this.getBusinesses();
-    const business = businesses.find(b => b.slug === slug);
-    
-    if (!business) {
-      console.error(`❌ Business not found: ${slug}`);
-      return { success: false, error: 'Business not found' };
-    }
-
-    console.log(`📱 Contacting ${business.name}`);
-    
-    // Clean phone number
-    const cleanPhone = business.phone.replace(/[^\d]/g, '');
-    
-    if (!cleanPhone || cleanPhone.length < 10) {
-      console.log(`⚠️  Invalid phone number: ${business.phone}`);
-      return { success: false, error: 'Invalid phone number' };
-    }
-
-    // Create personalized message
-    const message = this.createBusinessMessage(business);
-    
-    // Send message
-    const result = await this.sendWhatsAppMessage(cleanPhone, message);
-    
-    if (result.success) {
-      await this.updateBusinessWhatsAppStatus(business.slug, true);
-      console.log(`✅ Message sent to ${business.name}`);
-    } else {
-      await this.updateBusinessWhatsAppStatus(business.slug, false);
-      console.log(`❌ Failed to send message to ${business.name}`);
-    }
-
-    return result;
-  }
-
   async testSimpleMessage(phone) {
     console.log(`🧪 Testing simple WhatsApp message to ${phone}`);
     
-    const testMessage = `🔧 *Test Message - Proposition de Site Web*\n\nCeci est un message test pour vérifier que l'API WhatsApp fonctionne correctement.\n\n🔗 *Exemple de preview:* https://preview.grow-with-tools.com/epp-entreprise-prigueux-plomberie\n\nSi vous recevez ce message, votre système est prêt pour la campagne! 🚀`;
+    const testMessage = `🔧 *Test Message - Proposition de Site Web*\n\nCeci est un message test pour vérifier que l'API WhatsApp fonctionne correctement.\n\n🔗 *Exemple de preview:* https://preview.grow-with-tools.com/hbi-rnovation-rodez\n\nSi vous recevez ce message, votre système est prêt pour la campagne! 🚀`;
     
     const result = await this.sendWhatsAppMessage(phone, testMessage);
     
@@ -314,7 +311,7 @@ class WhatsAppSender {
     return result;
   }
 
-  async testBusinessMessage(phone, slug = 'epp-entreprise-prigueux-plomberie') {
+  async testBusinessMessage(phone, slug = 'hbi-rnovation-rodez') {
     console.log(`🧪 Testing business message to ${phone} using business: ${slug}`);
     
     // Get the actual business data
@@ -349,72 +346,80 @@ class WhatsAppSender {
     return result;
   }
 
+  async getStats() {
+    const progress = await this.loadProgress();
+    const logs = await this.getSendingLogs();
+    
+    console.log('📊 WhatsApp Campaign Statistics:');
+    console.log(`   📋 Total messages: ${logs.length}`);
+    console.log(`   ✅ Successful: ${logs.filter(log => log.result.success).length}`);
+    console.log(`   ❌ Failed: ${logs.filter(log => !log.result.success).length}`);
+    console.log(`   🎯 Completed businesses: ${progress.completedBusinesses.length}`);
+    console.log(`   📦 Current batch: ${progress.currentBatch}`);
+    console.log(`   📅 Last run: ${progress.lastRun || 'Never'}`);
+  }
+
+  async getSendingLogs() {
+    try {
+      if (!fs.existsSync(this.logFile)) {
+        return [];
+      }
+      return JSON.parse(fs.readFileSync(this.logFile, 'utf8'));
+    } catch (error) {
+      console.error('❌ Error reading logs:', error.message);
+      return [];
+    }
+  }
+
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-
-  async getStats() {
-    const businesses = await this.getBusinesses();
-    
-    const stats = {
-      total: businesses.length,
-      withPhone: businesses.filter(b => b.phone && b.phone !== 'Not found').length,
-      withScreenshots: businesses.filter(b => b.screenshotUrl).length,
-      whatsappSent: businesses.filter(b => b.whatsappSent).length,
-      whatsappNotSent: businesses.filter(b => !b.whatsappSent).length,
-      readyToSend: businesses.filter(b => 
-        b.phone && 
-        b.phone !== 'Not found' && 
-        !b.whatsappSent && 
-        b.screenshotUrl
-      ).length
-    };
-
-    console.log('📊 WhatsApp Campaign Statistics:');
-    console.log(`   📋 Total businesses: ${stats.total}`);
-    console.log(`   📱 With phone numbers: ${stats.withPhone}`);
-    console.log(`   📸 With screenshots: ${stats.withScreenshots}`);
-    console.log(`   ✅ WhatsApp sent: ${stats.whatsappSent}`);
-    console.log(`   ⏳ WhatsApp not sent: ${stats.whatsappNotSent}`);
-    console.log(`   🎯 Ready to send: ${stats.readyToSend}`);
-
-    return stats;
-  }
 }
 
-// Command line interface
-async function main() {
+// CLI interface
+if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const command = args[0];
-  const sender = new WhatsAppSender();
-
-  console.log('📱 ' + '='.repeat(60));
-  console.log('📱 WHATSAPP MESSAGE SENDER');
-  console.log('📱 ' + '='.repeat(60));
-
-  if (!sender.apiKey) {
-    console.error('❌ EVOLUTION_API_KEY not found in environment variables');
-    console.log('💡 Please add it to your .env file:');
-    console.log('   EVOLUTION_API_KEY=your_api_key_here');
-    process.exit(1);
+  
+  if (!command) {
+    console.log('📖 Available commands:');
+    console.log('  npm run whatsapp test <phone>           - Send actual business message test');
+    console.log('  npm run whatsapp test-simple <phone>     - Send simple test message');
+    console.log('  npm run whatsapp send [limit]           - Send to businesses (skip sent)');
+    console.log('  npm run whatsapp send-all                - Send to all businesses');
+    console.log('  npm run whatsapp business <slug>         - Send to specific business');
+    console.log('  npm run whatsapp stats                   - Show campaign statistics');
+    console.log('  npm run whatsapp progress                 - Show campaign progress');
+    console.log('  npm run whatsapp reset-progress          - Reset campaign progress');
+    console.log('');
+    console.log('💡 Examples:');
+    console.log('  npm run whatsapp test 212707673488');
+    console.log('  npm run whatsapp test-simple 212707673488');
+    console.log('  npm run whatsapp send 5');
+    console.log('  npm run whatsapp business hbi-rnovation-rodez');
+    console.log('  npm run whatsapp stats');
+    process.exit(0);
   }
 
   try {
+    const sender = new WhatsAppSender();
+    
     switch (command) {
       case 'test':
-        const testPhone = args[1];
-        if (!testPhone) {
-          console.error('❌ Please provide a phone number for testing');
+        const phone = args[1];
+        if (!phone) {
+          console.error('❌ Please provide a phone number');
           console.log('💡 Usage: npm run whatsapp test 212707673488');
           process.exit(1);
         }
-        await sender.testBusinessMessage(testPhone);
+        const slug = args[2];
+        await sender.testBusinessMessage(phone, slug);
         break;
 
       case 'test-simple':
         const simplePhone = args[1];
         if (!simplePhone) {
-          console.error('❌ Please provide a phone number for testing');
+          console.error('❌ Please provide a phone number');
           console.log('💡 Usage: npm run whatsapp test-simple 212707673488');
           process.exit(1);
         }
@@ -423,53 +428,45 @@ async function main() {
 
       case 'send':
         const limit = args[1] ? parseInt(args[1]) : null;
-        await sender.sendToAllBusinesses(limit);
+        await sender.sendToAllBusinesses(limit, true);
         break;
 
       case 'send-all':
-        await sender.sendToAllBusinesses(null, false); // Send to all, including already sent
+        await sender.sendToAllBusinesses(null, false);
         break;
 
       case 'business':
-        const slug = args[1];
-        if (!slug) {
+        const businessSlug = args[1];
+        if (!businessSlug) {
           console.error('❌ Please provide a business slug');
-          console.log('💡 Usage: npm run whatsapp business epp-entreprise-prigueux-plomberie');
+          console.log('💡 Usage: npm run whatsapp business hbi-rnovation-rodez');
           process.exit(1);
         }
-        await sender.sendToSpecificBusiness(slug);
+        await sender.sendToSpecificBusiness(businessSlug);
         break;
 
       case 'stats':
         await sender.getStats();
         break;
 
-      case 'logs':
-        const logStats = await sender.getSendingStats();
-        console.log('📊 WhatsApp Sending Logs Statistics:');
-        console.log(`   📋 Total messages: ${logStats.total}`);
-        console.log(`   ✅ Successful: ${logStats.sent}`);
-        console.log(`   ❌ Failed: ${logStats.failed}`);
-        console.log(`   📅 Last updated: ${logStats.lastUpdated || 'No logs yet'}`);
-        
-        if (logStats.recentFailures.length > 0) {
-          console.log('\n❌ Recent Failures:');
-          logStats.recentFailures.forEach((log, index) => {
-            console.log(`   ${index + 1}. ${log.business.name} - ${log.timestamp}`);
-            console.log(`      Error: ${log.result.error}`);
-          });
-        }
-        
-        if (logStats.recentSuccess.length > 0) {
-          console.log('\n✅ Recent Success:');
-          logStats.recentSuccess.forEach((log, index) => {
-            console.log(`   ${index + 1}. ${log.business.name} - ${log.timestamp}`);
-          });
-        }
+      case 'progress':
+        const progress = await sender.loadProgress();
+        console.log('📊 WhatsApp Campaign Progress:');
+        console.log(`   🎯 Completed businesses: ${progress.completedBusinesses.length}`);
+        console.log(`   📦 Current batch: ${progress.currentBatch}`);
+        console.log(`   ✅ Messages sent: ${progress.totalMessagesSent}`);
+        console.log(`   ❌ Messages failed: ${progress.totalMessagesFailed}`);
+        console.log(`   📅 Last run: ${progress.lastRun || 'Never'}`);
+        console.log(`   📈 Success rate: ${progress.totalMessagesSent > 0 ? ((progress.totalMessagesSent / (progress.totalMessagesSent + progress.totalMessagesFailed)) * 100).toFixed(1) : 0}%`);
         break;
 
-      case 'clear-logs':
-        await sender.clearLogs();
+      case 'reset-progress':
+        if (fs.existsSync('Output/whatsapp-progress.json')) {
+          fs.unlinkSync('Output/whatsapp-progress.json');
+          console.log('✅ WhatsApp progress reset successfully');
+        } else {
+          console.log('ℹ️  No progress file found');
+        }
         break;
 
       default:
@@ -480,16 +477,8 @@ async function main() {
         console.log('  npm run whatsapp send-all                - Send to all businesses');
         console.log('  npm run whatsapp business <slug>         - Send to specific business');
         console.log('  npm run whatsapp stats                   - Show campaign statistics');
-        console.log('  npm run whatsapp logs                    - Show sending logs and statistics');
-        console.log('  npm run whatsapp clear-logs              - Clear all sending logs');
-        console.log('');
-        console.log('💡 Examples:');
-        console.log('  npm run whatsapp test 212707673488');
-        console.log('  npm run whatsapp test-simple 212707673488');
-        console.log('  npm run whatsapp send 5');
-        console.log('  npm run whatsapp business epp-entreprise-prigueux-plomberie');
-        console.log('  npm run whatsapp logs');
-        console.log('  npm run whatsapp clear-logs');
+        console.log('  npm run whatsapp progress                 - Show campaign progress');
+        console.log('  npm run whatsapp reset-progress          - Reset campaign progress');
         break;
     }
   } catch (error) {
@@ -498,13 +487,4 @@ async function main() {
   }
 }
 
-// Install node-fetch if not available
-try {
-  await import('node-fetch');
-} catch (error) {
-  console.error('❌ node-fetch is required. Please install it:');
-  console.log('   npm install node-fetch');
-  process.exit(1);
-}
-
-main().catch(console.error);
+export default WhatsAppSender;

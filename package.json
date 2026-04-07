@@ -8,7 +8,10 @@
     "api": "node api-server.js",
     "scraper": "node no-website-scraper.js",
     "screenshots": "node screenshot-generator.js",
-    "whatsapp": "node whatsapp-sender.js"
+    "whatsapp": "node whatsapp-sender.js",
+    "whatsapp-cron": "node whatsapp-cron.js",
+    "whatsapp-daily": "node whatsapp-cron.js run",
+    "whatsapp-status": "node whatsapp-cron.js status"
   },
   "keywords": [],
   "author": "",

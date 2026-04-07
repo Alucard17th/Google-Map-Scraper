@@ -94,17 +94,33 @@ app.get('/api/health', (req, res) => {
 // Get latest business data
 app.get('/api/businesses', (req, res) => {
   try {
-    const latestFile = getLatestJsonFile();
+    // Try to load merged file first
+    const mergedFile = path.join(__dirname, 'Output', 'NoWebsites', 'all-businesses-merged.json');
+    let businesses = [];
+    let sourceFile = '';
     
-    if (!latestFile) {
-      return res.status(404).json({
-        error: 'No business data found',
-        message: 'No JSON files found in Output/NoWebsites directory'
-      });
-    }
+    if (fs.existsSync(mergedFile)) {
+      console.log('Loading merged businesses file...');
+      const mergedData = JSON.parse(fs.readFileSync(mergedFile, 'utf8'));
+      businesses = mergedData.businesses;
+      sourceFile = 'all-businesses-merged.json';
+      console.log(`Loaded ${businesses.length} businesses from merged file`);
+    } else {
+      // Fallback to latest individual file
+      const latestFile = getLatestJsonFile();
+      
+      if (!latestFile) {
+        return res.status(404).json({
+          error: 'No business data found',
+          message: 'No JSON files found in Output/NoWebsites directory'
+        });
+      }
 
-    const jsonData = fs.readFileSync(latestFile.filepath, 'utf-8');
-    const businesses = JSON.parse(jsonData);
+      const jsonData = fs.readFileSync(latestFile.filepath, 'utf-8');
+      const data = JSON.parse(jsonData);
+      businesses = data.businesses || data; // Handle both merged and regular format
+      sourceFile = latestFile.filename;
+    }
     
     // Add image URLs and API links
     const businessesWithImages = getBusinessDataWithImages(businesses);
@@ -122,17 +138,15 @@ app.get('/api/businesses', (req, res) => {
 
     res.json({
       metadata: {
-        sourceFile: latestFile.filename,
-        lastModified: latestFile.modifiedTime,
-        totalBusinesses: businesses.length,
-        apiVersion: '1.0.0'
+        source: sourceFile,
+        total: businesses.length,
+        statistics: stats,
+        lastUpdated: new Date().toISOString()
       },
-      statistics: stats,
       businesses: businessesWithImages
     });
-    
   } catch (error) {
-    console.error('Error fetching businesses:', error);
+    console.error('Error loading businesses:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message
