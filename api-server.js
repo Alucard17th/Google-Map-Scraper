@@ -61,6 +61,12 @@ function getLatestJsonFile() {
 
 // Helper function to get business data with image URLs
 function getBusinessDataWithImages(businesses) {
+  // Ensure businesses is an array
+  if (!Array.isArray(businesses)) {
+    console.error('Businesses is not an array:', typeof businesses);
+    return [];
+  }
+  
   return businesses.map(business => {
     const businessData = { ...business };
     
@@ -121,6 +127,8 @@ app.get('/api/businesses', (req, res) => {
       businesses = data.businesses || data; // Handle both merged and regular format
       sourceFile = latestFile.filename;
     }
+    
+    console.log(`Businesses type: ${typeof businesses}, length: ${businesses.length}`);
     
     // Add image URLs and API links
     const businessesWithImages = getBusinessDataWithImages(businesses);
