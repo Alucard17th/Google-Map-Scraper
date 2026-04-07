@@ -101,29 +101,40 @@ class WhatsAppSender {
 
   async sendWhatsAppMessage(number, message) {
     try {
+      console.log(`Sending to: ${number}`);
+      console.log(`API URL: ${this.apiUrl}`);
+      console.log(`API Key: ${this.apiKey ? 'SET' : 'NOT SET'}`);
+      
+      const requestBody = {
+        number: number,
+        text: message
+      };
+      
+      console.log(`Request body:`, JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': this.apiKey
         },
-        body: JSON.stringify({
-          number: number,
-          text: message
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const result = await response.json();
       
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response body:`, JSON.stringify(result, null, 2));
+      
       if (response.ok) {
-        console.log(`✅ Message sent successfully to ${number}`);
+        console.log(`Message sent successfully to ${number}`);
         return { success: true, data: result };
       } else {
-        console.error(`❌ Failed to send message to ${number}:`, result);
+        console.error(`Failed to send message to ${number}:`, result);
         return { success: false, error: result };
       }
     } catch (error) {
-      console.error(`❌ Error sending message to ${number}:`, error.message);
+      console.error(`Error sending message to ${number}:`, error.message);
       return { success: false, error: error.message };
     }
   }
@@ -246,11 +257,27 @@ class WhatsAppSender {
         
         console.log(`\n📱 ${batchStart + i + 1}/${businessesToContact.length} - Contacting ${business.name}`);
         
-        // Clean phone number
-        const cleanPhone = business.phone.replace(/[^\d]/g, '');
+        // Clean phone number but preserve country code
+        let cleanPhone = business.phone.trim();
         
-        if (!cleanPhone || cleanPhone.length < 10) {
-          console.log(`⚠️  Invalid phone number: ${business.phone}`);
+        // Remove spaces, dots, hyphens, but preserve +
+        cleanPhone = cleanPhone.replace(/[.\-\s]/g, '');
+        
+        // Ensure it starts with + if it has country code
+        if (cleanPhone.startsWith('00')) {
+          cleanPhone = '+' + cleanPhone.substring(2);
+        } else if (cleanPhone.startsWith('33') && cleanPhone.length === 11) {
+          cleanPhone = '+' + cleanPhone;
+        } else if (cleanPhone.startsWith('212') && cleanPhone.length === 12) {
+          cleanPhone = '+' + cleanPhone;
+        } else if (!cleanPhone.startsWith('+') && cleanPhone.length >= 10) {
+          cleanPhone = '+' + cleanPhone;
+        }
+        
+        console.log(`Phone number: ${business.phone} -> ${cleanPhone}`);
+        
+        if (!cleanPhone || cleanPhone.length < 11) {
+          console.log(`Invalid phone number: ${business.phone} -> ${cleanPhone}`);
           failedCount++;
           continue;
         }
