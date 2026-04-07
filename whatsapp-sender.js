@@ -101,35 +101,33 @@ class WhatsAppSender {
 
   async sendWhatsAppMessage(number, message) {
     try {
-      console.log(`Sending to: ${number}`);
-      console.log(`API URL: ${this.apiUrl}`);
-      console.log(`API Key: ${this.apiKey ? 'SET' : 'NOT SET'}`);
-      
-      const requestBody = {
-        number: number,
-        text: message
-      };
-      
-      console.log(`Request body:`, JSON.stringify(requestBody, null, 2));
-      
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': this.apiKey
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          number: number,
+          text: message
+        })
       });
 
       const result = await response.json();
-      
-      console.log(`Response status: ${response.status}`);
-      console.log(`Response body:`, JSON.stringify(result, null, 2));
       
       if (response.ok) {
         console.log(`Message sent successfully to ${number}`);
         return { success: true, data: result };
       } else {
+        // Check if it's a non-WhatsApp user error
+        if (result.response && result.response.message && result.response.message[0]) {
+          const messageInfo = result.response.message[0];
+          if (messageInfo.exists === false) {
+            console.log(`Skipping ${number} - Not a WhatsApp user`);
+            return { success: false, error: 'Not a WhatsApp user', skip: true };
+          }
+        }
+        
         console.error(`Failed to send message to ${number}:`, result);
         return { success: false, error: result };
       }
@@ -292,6 +290,10 @@ class WhatsAppSender {
           sentCount++;
           await this.logMessage(business, result, 'campaign');
           progress.completedBusinesses.push(business.slug);
+        } else if (result.skip) {
+          console.log(`Skipping ${business.name} - ${result.error}`);
+          await this.logMessage(business, result, 'campaign');
+          progress.completedBusinesses.push(business.slug); // Mark as completed to skip next time
         } else {
           failedCount++;
           await this.logMessage(business, result, 'campaign');
