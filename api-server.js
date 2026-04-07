@@ -179,33 +179,66 @@ app.get('/api/businesses', (req, res) => {
 app.get('/api/business/:slug', (req, res) => {
   try {
     const { slug } = req.params;
-    const latestFile = getLatestJsonFile();
     
-    if (!latestFile) {
-      return res.status(404).json({
-        error: 'No business data found'
+    // Try to load merged file first
+    const mergedFile = path.join(__dirname, 'Output', 'NoWebsites', 'all-businesses-merged.json');
+    let businesses = [];
+    let sourceFile = '';
+    
+    if (fs.existsSync(mergedFile)) {
+      console.log('Loading merged businesses file for slug lookup...');
+      const mergedData = JSON.parse(fs.readFileSync(mergedFile, 'utf8'));
+      businesses = mergedData.businesses;
+      sourceFile = 'all-businesses-merged.json';
+    } else {
+      // Fallback to latest individual file
+      const latestFile = getLatestJsonFile();
+      
+      if (!latestFile) {
+        return res.status(404).json({
+          error: 'No business data found'
+        });
+      }
+
+      const jsonData = fs.readFileSync(latestFile.filepath, 'utf-8');
+      const data = JSON.parse(jsonData);
+      businesses = data.businesses || data; // Handle both merged and regular format
+      sourceFile = latestFile.filename;
+    }
+    
+    // Ensure businesses is an array
+    if (!Array.isArray(businesses)) {
+      console.error('Businesses is not an array for slug lookup:', typeof businesses);
+      return res.status(500).json({
+        error: 'Data format error',
+        message: 'Businesses data is not in expected array format'
       });
     }
-
-    const jsonData = fs.readFileSync(latestFile.filepath, 'utf-8');
-    const businesses = JSON.parse(jsonData);
     
     const business = businesses.find(b => b.slug === slug);
     
     if (!business) {
       return res.status(404).json({
         error: 'Business not found',
-        slug: slug
+        slug: slug,
+        totalBusinesses: businesses.length,
+        source: sourceFile
       });
     }
 
     // Add image URLs and API links
     const businessWithImages = getBusinessDataWithImages([business])[0];
     
-    res.json(businessWithImages);
-    
+    res.json({
+      metadata: {
+        source: sourceFile,
+        slug: slug,
+        totalBusinesses: businesses.length
+      },
+      business: businessWithImages
+    });
   } catch (error) {
-    console.error('Error fetching business:', error);
+    console.error('Error loading business by slug:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message
