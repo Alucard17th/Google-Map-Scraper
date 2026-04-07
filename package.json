@@ -11,7 +11,8 @@
     "whatsapp": "node whatsapp-sender.js",
     "whatsapp-cron": "node whatsapp-cron.js",
     "whatsapp-daily": "node whatsapp-cron.js run",
-    "whatsapp-status": "node whatsapp-cron.js status"
+    "whatsapp-status": "node whatsapp-cron.js status",
+    "test-previews": "node test-preview-urls.js"
   },
   "keywords": [],
   "author": "",
