@@ -130,19 +130,29 @@ class WhatsAppSender {
         timestamp: new Date().toISOString(),
         messageType: messageType,
         business: {
-          name: business.name,
-          slug: business.slug,
-          phone: business.phone,
-          category: business.category,
-          rating: business.rating
+          name: business.name || 'Test Message',
+          slug: business.slug || 'test-message',
+          phone: business.phone || result.number || 'Unknown',
+          category: business.category || 'Test',
+          rating: business.rating || 5
         },
         result: {
           success: result.success,
           error: result.error || null,
           data: result.data || null
-        },
-        messagePreview: this.createBusinessMessage(business).substring(0, 100) + '...'
+        }
       };
+
+      // Add message preview only for real businesses
+      if (business.name && business.slug && business.slug !== 'test-message') {
+        try {
+          logEntry.messagePreview = this.createBusinessMessage(business).substring(0, 100) + '...';
+        } catch (error) {
+          logEntry.messagePreview = 'Test message - no preview available';
+        }
+      } else {
+        logEntry.messagePreview = 'Test message - no preview available';
+      }
 
       // Read existing logs
       let logs = [];
@@ -152,7 +162,7 @@ class WhatsAppSender {
           logs = JSON.parse(existingLogs);
         }
       } catch (error) {
-        console.log('📝 Creating new log file');
+        console.log('Creating new log file');
       }
 
       // Add new entry
@@ -166,9 +176,9 @@ class WhatsAppSender {
       // Write logs
       fs.writeFileSync(this.logFile, JSON.stringify(logs, null, 2));
       
-      console.log(`📝 Logged message for ${business.name}: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`Logged message for ${business.name || 'Test'}: ${result.success ? 'SUCCESS' : 'FAILED'}`);
     } catch (error) {
-      console.error('❌ Error logging message:', error.message);
+      console.error('Error logging message:', error.message);
     }
   }
 
