@@ -1,0 +1,18 @@
+{
+  "apps": [{
+    "name": "whatsapp-dashboard",
+    "script": "start-dashboard.sh",
+    "cwd": "/var/www/Google-Map-Scraper",
+    "instances": 1,
+    "autorestart": true,
+    "watch": false,
+    "max_memory_restart": "200M",
+    "env": {
+      "NODE_ENV": "production"
+    },
+    "log_file": "/var/log/whatsapp-dashboard-pm2.log",
+    "out_file": "/var/log/whatsapp-dashboard-pm2-out.log",
+    "error_file": "/var/log/whatsapp-dashboard-pm2-error.log",
+    "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
+  }]
+}
