@@ -657,7 +657,7 @@ class NoWebsiteScraper {
   async searchBusinesses(query, region, maxResults = 0) {
     const results = [];
     try {
-      const searchTerm = `${query} ${region}`;
+      const searchTerm = `${query} ${region} France`;
       const url = `https://www.google.com/maps/search/${encodeURIComponent(searchTerm)}/`;
       
       console.log(`Searching: ${searchTerm}`);

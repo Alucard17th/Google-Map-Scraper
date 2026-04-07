@@ -41,10 +41,7 @@
         "Manosque",
         "Cavaillon",
         "Apt",
-        "Forcalquier",
-        "Sisteron",
-        "Gap",
-        "Briançon"
+        "Forcalquier"
       ],
       "maxResults": 30,
       "enabled": true,
