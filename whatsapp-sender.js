@@ -86,11 +86,15 @@ class WhatsAppSender {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const businesses = await response.json();
-      console.log(`📊 Loaded ${businesses.length} businesses from API`);
+      const apiResponse = await response.json();
+      
+      // Handle API response format: {businesses: [...], metadata: {...}}
+      const businesses = apiResponse.businesses || apiResponse;
+      
+      console.log(`Loaded ${businesses.length} businesses from API`);
       return businesses;
     } catch (error) {
-      console.error('❌ Error fetching businesses:', error.message);
+      console.error('Error fetching businesses:', error.message);
       throw error;
     }
   }
