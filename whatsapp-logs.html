@@ -210,6 +210,9 @@
                                     <th onclick="sortTable('status')" style="cursor: pointer;">
                                         Status <i class="bi bi-arrow-down-up"></i>
                                     </th>
+                                    <th onclick="sortTable('failureReason')" style="cursor: pointer;">
+                                        Failure Reason <i class="bi bi-arrow-down-up"></i>
+                                    </th>
                                     <th>Message Preview</th>
                                     <th onclick="sortTable('messageType')" style="cursor: pointer;">
                                         Type <i class="bi bi-arrow-down-up"></i>
@@ -327,6 +330,7 @@
                 <td><span class="badge bg-secondary">${log.business.category}</span></td>
                 <td><code>${log.business.phone}</code></td>
                 <td><span class="${statusClass}">${statusText}</span></td>
+                <td>${log.result.error ? `<small class="text-danger">${log.result.error}</small>` : '<span class="text-muted">-</span>'}</td>
                 <td><div class="message-preview" title="${messagePreview}">${messagePreview}</div></td>
                 <td><span class="badge bg-info">${log.messageType}</span></td>
             `;
@@ -345,7 +349,8 @@
                     log.business.name.toLowerCase().includes(term) ||
                     log.business.phone.includes(term) ||
                     log.business.category.toLowerCase().includes(term) ||
-                    log.messageType.toLowerCase().includes(term)
+                    log.messageType.toLowerCase().includes(term) ||
+                    (log.result.error && log.result.error.toLowerCase().includes(term))
                 );
             }
             
@@ -385,6 +390,10 @@
                     case 'status':
                         aVal = a.result.success ? 1 : a.result.skip ? 2 : 3;
                         bVal = b.result.success ? 1 : b.result.skip ? 2 : 3;
+                        break;
+                    case 'failureReason':
+                        aVal = a.result.error || '';
+                        bVal = b.result.error || '';
                         break;
                     case 'messageType':
                         aVal = a.messageType.toLowerCase();
@@ -456,13 +465,14 @@
         // Export logs to CSV
         function exportLogs() {
             const csv = [
-                ['Timestamp', 'Business Name', 'Category', 'Phone', 'Status', 'Message Type', 'Message Preview'],
+                ['Timestamp', 'Business Name', 'Category', 'Phone', 'Status', 'Failure Reason', 'Message Type', 'Message Preview'],
                 ...filteredLogs.map(log => [
                     new Date(log.timestamp).toLocaleString(),
                     log.business.name,
                     log.business.category,
                     log.business.phone,
                     log.result.success ? 'Success' : log.result.skip ? 'Skipped' : 'Failed',
+                    log.result.error || '',
                     log.messageType,
                     log.messagePreview || 'No preview'
                 ])
