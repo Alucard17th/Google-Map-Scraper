@@ -1,0 +1,124 @@
+{
+  "businessTypes": [
+    {
+      "name": "plombier",
+      "searchTerm": "plombier sans site web France",
+      "maxResults": 30,
+      "enabled": true,
+      "batchSize": 3,
+      "regions": [
+        "Paris",
+        "Lyon", 
+        "Marseille",
+        "Toulouse",
+        "Nice",
+        "Nantes",
+        "Strasbourg",
+        "Montpellier",
+        "Bordeaux",
+        "Lille"
+      ]
+    },
+    {
+      "name": "chauffagiste",
+      "searchTerm": "chauffagiste sans site web France",
+      "maxResults": 25,
+      "enabled": true,
+      "batchSize": 3,
+      "regions": [
+        "Paris",
+        "Lyon",
+        "Marseille", 
+        "Toulouse",
+        "Nice",
+        "Nantes",
+        "Strasbourg",
+        "Montpellier",
+        "Bordeaux",
+        "Lille"
+      ]
+    },
+    {
+      "name": "electricien",
+      "searchTerm": "electricien sans site web France",
+      "maxResults": 25,
+      "enabled": true,
+      "batchSize": 3,
+      "regions": [
+        "Paris",
+        "Lyon",
+        "Marseille",
+        "Toulouse",
+        "Nice", 
+        "Nantes",
+        "Strasbourg",
+        "Montpellier",
+        "Bordeaux",
+        "Lille"
+      ]
+    },
+    {
+      "name": "carreleur",
+      "searchTerm": "carreleur sans site web France", 
+      "maxResults": 20,
+      "enabled": true,
+      "batchSize": 3,
+      "regions": [
+        "Paris",
+        "Lyon",
+        "Marseille",
+        "Toulouse",
+        "Nice",
+        "Nantes",
+        "Strasbourg",
+        "Montpellier",
+        "Bordeaux",
+        "Lille"
+      ]
+    },
+    {
+      "name": "peintre",
+      "searchTerm": "peintre sans site web France",
+      "maxResults": 20,
+      "enabled": true,
+      "batchSize": 3,
+      "regions": [
+        "Paris",
+        "Lyon",
+        "Marseille",
+        "Toulouse",
+        "Nice",
+        "Nantes",
+        "Strasbourg", 
+        "Montpellier",
+        "Bordeaux",
+        "Lille"
+      ]
+    }
+  ],
+  "headless": true,
+  "delays": {
+    "betweenBusinesses": 8000,
+    "betweenRegions": 20000,
+    "betweenBusinessTypes": 30000,
+    "betweenResults": 2000,
+    "pageLoad": 4000
+  },
+  "batchSize": 3,
+  "output": {
+    "directory": "../Output/NoWebsites",
+    "filenameFormat": "{businessType}-{region}.json"
+  },
+  "filters": {
+    "excludeKeywords": ["site web", "website", "www.", "http", "https"],
+    "includeKeywords": ["téléphone", "phone", "contact"],
+    "minRating": 0
+  },
+  "browser": {
+    "headless": true,
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    }
+  }
+}

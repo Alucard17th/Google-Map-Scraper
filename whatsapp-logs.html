@@ -330,7 +330,7 @@
                 <td><span class="badge bg-secondary">${log.business.category}</span></td>
                 <td><code>${log.business.phone}</code></td>
                 <td><span class="${statusClass}">${statusText}</span></td>
-                <td>${log.result.error ? `<small class="text-danger">${log.result.error}</small>` : '<span class="text-muted">-</span>'}</td>
+                <td>${log.result.error ? `<small class="text-danger">${log.result.error.response?.message || log.result.error.error || JSON.stringify(log.result.error)}</small>` : '<span class="text-muted">-</span>'}</td>
                 <td><div class="message-preview" title="${messagePreview}">${messagePreview}</div></td>
                 <td><span class="badge bg-info">${log.messageType}</span></td>
             `;
@@ -350,7 +350,11 @@
                     log.business.phone.includes(term) ||
                     log.business.category.toLowerCase().includes(term) ||
                     log.messageType.toLowerCase().includes(term) ||
-                    (log.result.error && log.result.error.toLowerCase().includes(term))
+                    (log.result.error && (
+                        (log.result.error.response?.message && log.result.error.response.message.toLowerCase().includes(term)) ||
+                        (log.result.error.error && log.result.error.error.toLowerCase().includes(term)) ||
+                        JSON.stringify(log.result.error).toLowerCase().includes(term)
+                    ))
                 );
             }
             
@@ -392,8 +396,8 @@
                         bVal = b.result.success ? 1 : b.result.skip ? 2 : 3;
                         break;
                     case 'failureReason':
-                        aVal = a.result.error || '';
-                        bVal = b.result.error || '';
+                        aVal = a.result.error?.response?.message || a.result.error?.error || JSON.stringify(a.result.error);
+                        bVal = b.result.error?.response?.message || b.result.error?.error || JSON.stringify(b.result.error);
                         break;
                     case 'messageType':
                         aVal = a.messageType.toLowerCase();
@@ -472,7 +476,7 @@
                     log.business.category,
                     log.business.phone,
                     log.result.success ? 'Success' : log.result.skip ? 'Skipped' : 'Failed',
-                    log.result.error || '',
+                    log.result.error?.response?.message || log.result.error?.error || JSON.stringify(log.result.error) || '',
                     log.messageType,
                     log.messagePreview || 'No preview'
                 ])

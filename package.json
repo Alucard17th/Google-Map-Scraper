@@ -12,7 +12,15 @@
     "whatsapp-cron": "node whatsapp-cron.js",
     "whatsapp-daily": "node whatsapp-cron.js run",
     "whatsapp-status": "node whatsapp-cron.js status",
-    "test-previews": "node test-preview-urls.js"
+    "test-previews": "node test-preview-urls.js",
+    "scrape-dynamic": "node dynamic/dynamic-scraper.js",
+    "scrape-dynamic-plombier": "node dynamic/dynamic-scraper.js --type=plombier",
+    "scrape-dynamic-chauffagiste": "node dynamic/dynamic-scraper.js --type=chauffagiste",
+    "scrape-dynamic-electricien": "node dynamic/dynamic-scraper.js --type=electricien",
+    "scrape-dynamic-carreleur": "node dynamic/dynamic-scraper.js --type=carreleur",
+    "scrape-dynamic-peintre": "node dynamic/dynamic-scraper.js --type=peintre",
+    "scrape-dynamic-status": "node dynamic/dynamic-scraper.js --status",
+    "scrape-dynamic-list": "node dynamic/dynamic-scraper.js --list-types"
   },
   "keywords": [],
   "author": "",
