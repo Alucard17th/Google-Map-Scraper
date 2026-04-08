@@ -297,6 +297,24 @@ class WhatsAppSender {
         } else {
           failedCount++;
           await this.logMessage(business, result, 'campaign');
+          
+          // Only mark as completed if it's NOT a connection issue
+          const isConnectionIssue = result.error && (
+            (typeof result.error === 'string' && result.error.includes('Connection Closed')) ||
+            (typeof result.error === 'string' && result.error.includes('Internal Server Error')) ||
+            (typeof result.error === 'string' && result.error.includes('timeout')) ||
+            (typeof result.error === 'string' && result.error.includes('network')) ||
+            (result.error.response && result.error.response.message === 'Connection Closed') ||
+            (result.error.response && result.error.response.message && result.error.response.message.includes('Connection Closed')) ||
+            (result.error.error && result.error.error === 'Internal Server Error')
+          );
+          
+          if (!isConnectionIssue) {
+            progress.completedBusinesses.push(business.slug);
+            console.log(`Marked ${business.name} as completed due to legitimate failure`);
+          } else {
+            console.log(`NOT marking ${business.name} as completed due to connection issue: ${result.error}`);
+          }
         }
 
         // Add delay between messages

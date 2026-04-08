@@ -213,6 +213,9 @@
                                     <th onclick="sortTable('failureReason')" style="cursor: pointer;">
                                         Failure Reason <i class="bi bi-arrow-down-up"></i>
                                     </th>
+                                    <th onclick="sortTable('retryStatus')" style="cursor: pointer;">
+                                        Retry Status <i class="bi bi-arrow-down-up"></i>
+                                    </th>
                                     <th>Message Preview</th>
                                     <th onclick="sortTable('messageType')" style="cursor: pointer;">
                                         Type <i class="bi bi-arrow-down-up"></i>
@@ -331,11 +334,67 @@
                 <td><code>${log.business.phone}</code></td>
                 <td><span class="${statusClass}">${statusText}</span></td>
                 <td>${log.result.error ? `<small class="text-danger">${log.result.error.response?.message || log.result.error.error || JSON.stringify(log.result.error)}</small>` : '<span class="text-muted">-</span>'}</td>
+                <td>${getRetryStatus(log)}</td>
                 <td><div class="message-preview" title="${messagePreview}">${messagePreview}</div></td>
                 <td><span class="badge bg-info">${log.messageType}</span></td>
             `;
             
             return row;
+        }
+
+        // Get retry status for a log entry
+        function getRetryStatus(log) {
+            if (log.result.success) {
+                return '<span class="badge bg-success">Completed</span>';
+            }
+            
+            if (log.result.skip) {
+                return '<span class="badge bg-warning">Skipped</span>';
+            }
+            
+            if (!log.result.error) {
+                return '<span class="badge bg-secondary">Unknown</span>';
+            }
+            
+            // Check if it's a connection issue (will be retried)
+            const error = log.result.error;
+            const isConnectionIssue = error && (
+                (typeof error === 'string' && (
+                    error.includes('Connection Closed') ||
+                    error.includes('Internal Server Error') ||
+                    error.includes('timeout') ||
+                    error.includes('network')
+                )) ||
+                (error.response && (
+                    error.response.message === 'Connection Closed' ||
+                    (error.response.message && error.response.message.includes('Connection Closed'))
+                )) ||
+                (error.error === 'Internal Server Error')
+            );
+            
+            if (isConnectionIssue) {
+                return '<span class="badge bg-info">Will Retry</span>';
+            }
+            
+            // Check if it's a legitimate failure (won't be retried)
+            const isLegitimateFailure = error && (
+                (typeof error === 'string' && (
+                    error.includes('Not a WhatsApp user') ||
+                    error.includes('Bad Request') ||
+                    error.includes('Unauthorized') ||
+                    error.includes('Forbidden')
+                )) ||
+                (error.response && error.response.message && (
+                    error.response.message.includes('Not a WhatsApp user') ||
+                    error.response.message.includes('exists": false')
+                ))
+            );
+            
+            if (isLegitimateFailure) {
+                return '<span class="badge bg-danger">No Retry</span>';
+            }
+            
+            return '<span class="badge bg-secondary">No Retry</span>';
         }
 
         // Filter logs based on search input
@@ -350,6 +409,7 @@
                     log.business.phone.includes(term) ||
                     log.business.category.toLowerCase().includes(term) ||
                     log.messageType.toLowerCase().includes(term) ||
+                    (getRetryStatus(log).toLowerCase().includes(term)) ||
                     (log.result.error && (
                         (log.result.error.response?.message && log.result.error.response.message.toLowerCase().includes(term)) ||
                         (log.result.error.error && log.result.error.error.toLowerCase().includes(term)) ||
@@ -398,6 +458,10 @@
                     case 'failureReason':
                         aVal = a.result.error?.response?.message || a.result.error?.error || JSON.stringify(a.result.error);
                         bVal = b.result.error?.response?.message || b.result.error?.error || JSON.stringify(b.result.error);
+                        break;
+                    case 'retryStatus':
+                        aVal = getRetryStatus(a);
+                        bVal = getRetryStatus(b);
                         break;
                     case 'messageType':
                         aVal = a.messageType.toLowerCase();
@@ -469,7 +533,7 @@
         // Export logs to CSV
         function exportLogs() {
             const csv = [
-                ['Timestamp', 'Business Name', 'Category', 'Phone', 'Status', 'Failure Reason', 'Message Type', 'Message Preview'],
+                ['Timestamp', 'Business Name', 'Category', 'Phone', 'Status', 'Failure Reason', 'Retry Status', 'Message Type', 'Message Preview'],
                 ...filteredLogs.map(log => [
                     new Date(log.timestamp).toLocaleString(),
                     log.business.name,
@@ -477,6 +541,7 @@
                     log.business.phone,
                     log.result.success ? 'Success' : log.result.skip ? 'Skipped' : 'Failed',
                     log.result.error?.response?.message || log.result.error?.error || JSON.stringify(log.result.error) || '',
+                    getRetryStatus(log).replace(/<[^>]*>/g, ''), // Remove HTML tags
                     log.messageType,
                     log.messagePreview || 'No preview'
                 ])
