@@ -5,7 +5,7 @@ class WhatsAppCronRunner {
   constructor() {
     this.sender = new WhatsAppSender();
     this.config = this.sender.config;
-    this.dailyLimit = 10; // 10 businesses per day (2 batches of 5)
+    this.dailyLimit = 10; // 10 successful messages per day (not business attempts)
     this.sentTodayFile = 'Output/sent-today.json';
   }
 
@@ -88,25 +88,56 @@ class WhatsAppCronRunner {
     
     try {
       // Send remaining messages for today
-      console.log(`📱 Sending ${remainingToday} messages today...`);
+      console.log(`Trying to send ${remainingToday} messages today...`);
       
-      const result = await this.sender.sendToAllBusinesses(remainingToday, true);
+      // Keep sending until we reach the daily success limit
+      let totalSuccessful = 0;
+      let totalAttempted = 0;
+      let totalFailed = 0;
       
-      // Update daily count
-      const newTotal = sentToday + result.sent;
-      await this.updateSentTodayCount(newTotal);
+      while (totalSuccessful < remainingToday) {
+        const batchSize = Math.min(5, remainingToday - totalSuccessful); // Send in batches of 5
+        console.log(`\nSending batch of ${batchSize} messages (successful so far: ${totalSuccessful})...`);
+        
+        const result = await this.sender.sendToAllBusinesses(batchSize, true);
+        
+        totalSuccessful += result.sent;
+        totalFailed += result.failed;
+        totalAttempted += result.sent + result.failed;
+        
+        console.log(`Batch result: ${result.sent} sent, ${result.failed} failed`);
+        console.log(`Progress: ${totalSuccessful}/${remainingToday} successful messages`);
+        
+        // Update daily count after each batch
+        const newTotal = sentToday + totalSuccessful;
+        await this.updateSentTodayCount(newTotal);
+        
+        // If we didn't send any successful messages in this batch, stop to avoid infinite loop
+        if (result.sent === 0) {
+          console.log('No successful messages in this batch. Stopping to avoid infinite loop.');
+          break;
+        }
+        
+        // Small delay between batches
+        if (totalSuccessful < remainingToday) {
+          console.log('Taking a short break before next batch...');
+          await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds
+        }
+      }
       
-      console.log('\n📊 Daily Campaign Summary:');
-      console.log(`   ✅ Sent today: ${result.sent}`);
-      console.log(`   ❌ Failed today: ${result.failed}`);
-      console.log(`   📊 Total today: ${newTotal}/${this.dailyLimit}`);
-      console.log(`   📈 Success rate: ${result.sent > 0 ? ((result.sent / (result.sent + result.failed)) * 100).toFixed(1) : 0}%`);
+      console.log('\n\u2728 Daily Campaign Summary:');
+      console.log(`   \u2705 Successfully sent: ${totalSuccessful}`);
+      console.log(`   \u274c Failed attempts: ${totalFailed}`);
+      console.log(`   \ud83d\udcca Total businesses attempted: ${totalAttempted}`);
+      console.log(`   \ud83d\udcc8 Success rate: ${totalAttempted > 0 ? ((totalSuccessful / totalAttempted) * 100).toFixed(1) : 0}%`);
+      console.log(`   \ud83d\udccb Daily goal: ${totalSuccessful}/${this.dailyLimit} successful messages`);
       
       // Check if daily limit is now reached
-      if (newTotal >= this.dailyLimit) {
-        console.log('🎉 Daily limit reached! Campaign complete for today.');
+      const finalTotal = sentToday + totalSuccessful;
+      if (finalTotal >= this.dailyLimit) {
+        console.log('\ud83c\udf89 Daily success limit reached! Campaign complete for today.');
       } else {
-        console.log(`⏳ ${this.dailyLimit - newTotal} messages remaining for next run.`);
+        console.log(`\u23f3 ${this.dailyLimit - finalTotal} successful messages remaining for next run.`);
       }
       
     } catch (error) {
