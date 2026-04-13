@@ -619,7 +619,23 @@
                 
                 // Load ALL businesses from scraped data
                 const businessesResponse = await fetch('Output/NoWebsites/all-businesses-merged.json');
-                const allBusinesses = await businessesResponse.json();
+                const apiResponse = await businessesResponse.json();
+                
+                // Handle different response formats
+                let allBusinesses;
+                if (Array.isArray(apiResponse)) {
+                    // Direct array response
+                    allBusinesses = apiResponse;
+                } else if (apiResponse.businesses && Array.isArray(apiResponse.businesses)) {
+                    // Nested array response
+                    allBusinesses = apiResponse.businesses;
+                } else if (apiResponse.data && Array.isArray(apiResponse.data)) {
+                    // Data property response
+                    allBusinesses = apiResponse.data;
+                } else {
+                    console.error('Unexpected API response format:', apiResponse);
+                    throw new Error('Invalid business data format');
+                }
                 
                 // Filter: All businesses minus completed ones, excluding "Not found" phones
                 const remainingBusinesses = allBusinesses.filter(business => 
@@ -640,8 +656,18 @@
                 
             } catch (error) {
                 console.error('Error calculating remaining businesses:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                
                 countElement.textContent = 'Error';
                 statsElement.textContent = 'Unable to calculate - check console for details';
+                
+                // Try to show helpful debugging info
+                if (error.message.includes('Invalid business data format')) {
+                    console.log('Expected business data format: Array or {businesses: Array} or {data: Array}');
+                }
             }
         }
 
