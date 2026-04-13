@@ -157,6 +157,23 @@
             </div>
         </div>
 
+        <!-- Total Remaining Businesses Counter -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-2">
+                            <i class="bi bi-people"></i> 
+                            Total Businesses Remaining (From All Scraped Data)
+                        </h5>
+                        <div class="stats-number text-info" id="totalRemainingCount">Loading...</div>
+                        <div class="stats-label">Businesses that haven't received SMS yet</div>
+                        <small class="text-muted" id="remainingStats">Calculating...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Controls -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -588,6 +605,52 @@
             document.getElementById('errorDiv').classList.remove('d-none');
             document.getElementById('errorMessage').textContent = message;
         }
+
+        // Calculate total remaining businesses from all scraped data
+        async function loadTotalRemainingBusinesses() {
+            const countElement = document.getElementById('totalRemainingCount');
+            const statsElement = document.getElementById('remainingStats');
+            
+            try {
+                // Load progress data (completed businesses)
+                const progressResponse = await fetch('Output/whatsapp-progress.json');
+                const progressData = await progressResponse.json();
+                const completedBusinesses = new Set(progressData.completedBusinesses || []);
+                
+                // Load ALL businesses from scraped data
+                const businessesResponse = await fetch('Output/NoWebsites/all-businesses-merged.json');
+                const allBusinesses = await businessesResponse.json();
+                
+                // Filter: All businesses minus completed ones, excluding "Not found" phones
+                const remainingBusinesses = allBusinesses.filter(business => 
+                    !completedBusinesses.has(business.slug) && 
+                    business.phone && 
+                    business.phone !== 'Not found'
+                );
+                
+                // Calculate statistics
+                const totalBusinesses = allBusinesses.filter(b => b.phone && b.phone !== 'Not found').length;
+                const completedCount = completedBusinesses.size;
+                const remainingCount = remainingBusinesses.length;
+                const completionRate = ((completedCount / totalBusinesses) * 100).toFixed(1);
+                
+                // Update display
+                countElement.textContent = remainingCount.toLocaleString();
+                statsElement.textContent = `Total: ${totalBusinesses.toLocaleString()} | Completed: ${completedCount.toLocaleString()} (${completionRate}%)`;
+                
+            } catch (error) {
+                console.error('Error calculating remaining businesses:', error);
+                countElement.textContent = 'Error';
+                statsElement.textContent = 'Unable to calculate - check console for details';
+            }
+        }
+
+        // Load total remaining when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                loadTotalRemainingBusinesses();
+            }, 500); // Load quickly after page load
+        });
     </script>
 </body>
 </html>
