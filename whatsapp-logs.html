@@ -363,13 +363,27 @@
                     error.includes('Connection Closed') ||
                     error.includes('Internal Server Error') ||
                     error.includes('timeout') ||
-                    error.includes('network')
+                    error.includes('network') ||
+                    error.includes('instance does not exist') ||
+                    error.includes('wa1') ||
+                    error.includes('instance not found') ||
+                    error.includes('disconnected') ||
+                    error.includes('session closed')
                 )) ||
                 (error.response && (
                     error.response.message === 'Connection Closed' ||
-                    (error.response.message && error.response.message.includes('Connection Closed'))
+                    (error.response.message && (
+                        error.response.message.includes('Connection Closed') ||
+                        error.response.message.includes('instance does not exist') ||
+                        error.response.message.includes('wa1') ||
+                        error.response.message.includes('instance not found') ||
+                        error.response.message.includes('disconnected') ||
+                        error.response.message.includes('session closed')
+                    ))
                 )) ||
-                (error.error === 'Internal Server Error')
+                (error.error === 'Internal Server Error') ||
+                (error.error && error.error.includes('instance does not exist')) ||
+                (error.error && error.error.includes('wa1'))
             );
             
             if (isConnectionIssue) {

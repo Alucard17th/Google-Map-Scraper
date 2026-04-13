@@ -300,13 +300,30 @@ class WhatsAppSender {
           
           // Only mark as completed if it's NOT a connection issue
           const isConnectionIssue = result.error && (
-            (typeof result.error === 'string' && result.error.includes('Connection Closed')) ||
-            (typeof result.error === 'string' && result.error.includes('Internal Server Error')) ||
-            (typeof result.error === 'string' && result.error.includes('timeout')) ||
-            (typeof result.error === 'string' && result.error.includes('network')) ||
-            (result.error.response && result.error.response.message === 'Connection Closed') ||
-            (result.error.response && result.error.response.message && result.error.response.message.includes('Connection Closed')) ||
-            (result.error.error && result.error.error === 'Internal Server Error')
+            (typeof result.error === 'string' && (
+              result.error.includes('Connection Closed') ||
+              result.error.includes('Internal Server Error') ||
+              result.error.includes('timeout') ||
+              result.error.includes('network') ||
+              result.error.includes('instance does not exist') ||
+              result.error.includes('instance not found') ||
+              result.error.includes('disconnected') ||
+              result.error.includes('session closed')
+            )) ||
+            (result.error.response && (
+              result.error.response.message === 'Connection Closed' ||
+              (result.error.response.message && (
+                result.error.response.message.includes('Connection Closed') ||
+                result.error.response.message.includes('instance does not exist') ||
+                result.error.response.message.includes('instance not found') ||
+                result.error.response.message.includes('disconnected') ||
+                result.error.response.message.includes('session closed')
+              ))
+            )) ||
+            (result.error.error && (
+              result.error.error === 'Internal Server Error' ||
+              result.error.error.includes('instance does not exist')
+            ))
           );
           
           if (!isConnectionIssue) {
