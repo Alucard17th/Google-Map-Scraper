@@ -637,18 +637,20 @@
                     throw new Error('Invalid business data format');
                 }
                 
-                // Filter: All businesses minus completed ones, excluding "Not found" phones
-                const remainingBusinesses = allBusinesses.filter(business => 
-                    !completedBusinesses.has(business.slug) && 
-                    business.phone && 
-                    business.phone !== 'Not found'
-                );
-                
-                // Calculate statistics
-                const totalBusinesses = allBusinesses.filter(b => b.phone && b.phone !== 'Not found').length;
-                const completedCount = completedBusinesses.size;
-                const remainingCount = remainingBusinesses.length;
-                const completionRate = ((completedCount / totalBusinesses) * 100).toFixed(1);
+                // Use a single population for all stats: businesses with a valid phone
+                const validPhoneBusinesses = allBusinesses.filter(b => b.phone && b.phone !== 'Not found');
+                const validSlugs = new Set(validPhoneBusinesses.map(b => b.slug));
+
+                // Completed = slugs in completedBusinesses that exist in the big list AND have a valid phone
+                let completedCount = 0;
+                completedBusinesses.forEach(slug => {
+                    if (validSlugs.has(slug)) completedCount++;
+                });
+
+                // Remaining = valid-phone businesses not yet marked completed
+                const remainingCount = validPhoneBusinesses.filter(b => !completedBusinesses.has(b.slug)).length;
+                const totalBusinesses = validPhoneBusinesses.length;
+                const completionRate = totalBusinesses > 0 ? ((completedCount / totalBusinesses) * 100).toFixed(1) : '0.0';
                 
                 // Update display
                 countElement.textContent = remainingCount.toLocaleString();
