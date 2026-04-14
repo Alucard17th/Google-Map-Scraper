@@ -176,7 +176,7 @@
 
         <!-- Controls -->
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4 mb-2 mb-md-0">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search"></i>
@@ -184,12 +184,28 @@
                     <input type="text" class="form-control search-box border-start-0" id="searchInput" placeholder="Search by business name, phone, or category...">
                 </div>
             </div>
-            <div class="col-md-6 text-end">
+            <div class="col-md-3 mb-2 mb-md-0">
+                <input type="date" class="form-control" id="dateFilter" />
+            </div>
+            <div class="col-md-3 mb-2 mb-md-0">
+                <select class="form-select" id="retryStatusFilter">
+                    <option value="">All Retry Statuses</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Skipped">Skipped</option>
+                    <option value="Will Retry">Will Retry</option>
+                    <option value="No Retry">No Retry</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+            </div>
+            <div class="col-md-2 text-end">
                 <button class="btn refresh-btn me-2" onclick="refreshLogs()">
                     <i class="bi bi-arrow-clockwise"></i> Refresh
                 </button>
                 <button class="btn refresh-btn" onclick="exportLogs()">
                     <i class="bi bi-download"></i> Export
+                </button>
+                <button class="btn btn-outline-light ms-2" onclick="clearFilters()">
+                    Clear
                 </button>
             </div>
         </div>
@@ -267,13 +283,28 @@
         let sortColumn = 'timestamp';
         let sortDirection = 'desc';
 
+        let currentSearchTerm = '';
+        let currentDateFilter = '';
+        let currentRetryStatusFilter = '';
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             loadLogs();
             
             // Setup search
             document.getElementById('searchInput').addEventListener('input', function(e) {
-                filterLogs(e.target.value);
+                currentSearchTerm = e.target.value || '';
+                applyFilters();
+            });
+
+            document.getElementById('dateFilter').addEventListener('change', function(e) {
+                currentDateFilter = e.target.value || '';
+                applyFilters();
+            });
+
+            document.getElementById('retryStatusFilter').addEventListener('change', function(e) {
+                currentRetryStatusFilter = e.target.value || '';
+                applyFilters();
             });
         });
 
@@ -291,7 +322,7 @@
                 filteredLogs = [...allLogs];
                 
                 updateStatistics();
-                displayLogs();
+                applyFilters();
                 hideLoading();
             } catch (error) {
                 console.error('Error loading logs:', error);
@@ -428,29 +459,115 @@
             return '<span class="badge bg-secondary">No Retry</span>';
         }
 
-        // Filter logs based on search input
-        function filterLogs(searchTerm) {
-            const term = searchTerm.toLowerCase();
-            
-            if (term === '') {
-                filteredLogs = [...allLogs];
-            } else {
-                filteredLogs = allLogs.filter(log => 
+        function getRetryStatusText(log) {
+            if (log.result.success) return 'Completed';
+            if (log.result.skip) return 'Skipped';
+            if (!log.result.error) return 'Unknown';
+
+            const error = log.result.error;
+            const isConnectionIssue = error && (
+                (typeof error === 'string' && (
+                    error.includes('Connection Closed') ||
+                    error.includes('Internal Server Error') ||
+                    error.includes('timeout') ||
+                    error.includes('network') ||
+                    error.includes('instance does not exist') ||
+                    error.includes('wa1') ||
+                    error.includes('instance not found') ||
+                    error.includes('disconnected') ||
+                    error.includes('session closed')
+                )) ||
+                (error.response && (
+                    error.response.message === 'Connection Closed' ||
+                    (error.response.message && (
+                        error.response.message.includes('Connection Closed') ||
+                        error.response.message.includes('instance does not exist') ||
+                        error.response.message.includes('wa1') ||
+                        error.response.message.includes('instance not found') ||
+                        error.response.message.includes('disconnected') ||
+                        error.response.message.includes('session closed')
+                    ))
+                )) ||
+                (error.error === 'Internal Server Error') ||
+                (error.error && error.error.includes('instance does not exist')) ||
+                (error.error && error.error.includes('wa1'))
+            );
+
+            if (isConnectionIssue) return 'Will Retry';
+            return 'No Retry';
+        }
+
+        function toLocalYyyyMmDd(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function applyFilters() {
+            const term = (currentSearchTerm || '').toLowerCase().trim();
+            const dateFilter = currentDateFilter || '';
+            const retryFilter = currentRetryStatusFilter || '';
+
+            filteredLogs = allLogs.filter(log => {
+                // Date filter
+                if (dateFilter) {
+                    const logDate = toLocalYyyyMmDd(new Date(log.timestamp));
+                    if (logDate !== dateFilter) return false;
+                }
+
+                // Retry status filter
+                if (retryFilter) {
+                    const retryText = getRetryStatusText(log);
+                    if (retryText !== retryFilter) return false;
+                }
+
+                // Search filter
+                if (!term) return true;
+
+                const retryTextLower = getRetryStatusText(log).toLowerCase();
+
+                return (
                     log.business.name.toLowerCase().includes(term) ||
                     log.business.phone.includes(term) ||
                     log.business.category.toLowerCase().includes(term) ||
                     log.messageType.toLowerCase().includes(term) ||
-                    (getRetryStatus(log).toLowerCase().includes(term)) ||
+                    retryTextLower.includes(term) ||
                     (log.result.error && (
                         (log.result.error.response?.message && log.result.error.response.message.toLowerCase().includes(term)) ||
                         (log.result.error.error && log.result.error.error.toLowerCase().includes(term)) ||
                         JSON.stringify(log.result.error).toLowerCase().includes(term)
                     ))
                 );
-            }
-            
+            });
+
             currentPage = 1;
+            if (sortColumn) {
+                sortFilteredLogs(sortColumn, sortDirection);
+            }
             displayLogs();
+        }
+
+        function clearFilters() {
+            currentSearchTerm = '';
+            currentDateFilter = '';
+            currentRetryStatusFilter = '';
+
+            const searchInput = document.getElementById('searchInput');
+            const dateInput = document.getElementById('dateFilter');
+            const retrySelect = document.getElementById('retryStatusFilter');
+
+            if (searchInput) searchInput.value = '';
+            if (dateInput) dateInput.value = '';
+            if (retrySelect) retrySelect.value = '';
+
+            applyFilters();
+        }
+
+        // Filter logs based on current filters
+        function filterLogs(searchTerm) {
+            currentSearchTerm = searchTerm || '';
+            applyFilters();
         }
 
         // Sort table
@@ -462,6 +579,12 @@
                 sortDirection = 'asc';
             }
 
+            sortFilteredLogs(sortColumn, sortDirection);
+            
+            displayLogs();
+        }
+
+        function sortFilteredLogs(column, direction) {
             filteredLogs.sort((a, b) => {
                 let aVal, bVal;
                 
@@ -491,8 +614,8 @@
                         bVal = b.result.error?.response?.message || b.result.error?.error || JSON.stringify(b.result.error);
                         break;
                     case 'retryStatus':
-                        aVal = getRetryStatus(a);
-                        bVal = getRetryStatus(b);
+                        aVal = getRetryStatusText(a);
+                        bVal = getRetryStatusText(b);
                         break;
                     case 'messageType':
                         aVal = a.messageType.toLowerCase();
@@ -500,14 +623,12 @@
                         break;
                 }
                 
-                if (sortDirection === 'asc') {
+                if (direction === 'asc') {
                     return aVal > bVal ? 1 : -1;
                 } else {
                     return aVal < bVal ? 1 : -1;
                 }
             });
-            
-            displayLogs();
         }
 
         // Update pagination
