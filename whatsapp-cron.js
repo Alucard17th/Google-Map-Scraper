@@ -5,7 +5,7 @@ class WhatsAppCronRunner {
   constructor() {
     this.sender = new WhatsAppSender();
     this.config = this.sender.config;
-    this.dailyLimit = 10; // 10 successful messages per day (not business attempts)
+    this.dailyLimit = 25; // 10 successful messages per day (not business attempts)
     this.sentTodayFile = 'Output/sent-today.json';
   }
 
