@@ -276,7 +276,18 @@ class WhatsAppSender {
         
         if (!cleanPhone || cleanPhone.length < 11) {
           console.log(`Invalid phone number: ${business.phone} -> ${cleanPhone}`);
+
           failedCount++;
+
+          const invalidPhoneResult = {
+            success: false,
+            error: `Invalid phone number: ${business.phone}`,
+            skip: true
+          };
+
+          await this.logMessage(business, invalidPhoneResult, 'campaign');
+          progress.completedBusinesses.push(business.slug); // Skip next time
+
           continue;
         }
 
