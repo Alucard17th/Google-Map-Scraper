@@ -513,6 +513,28 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
+        function getErrorText(log) {
+            const err = log?.result?.error;
+            if (!err) return '';
+
+            // Try common shapes first
+            const msg = err?.response?.message;
+            if (typeof msg === 'string') return msg;
+            if (msg != null) {
+                try { return JSON.stringify(msg); } catch { /* ignore */ }
+            }
+
+            const errField = err?.error;
+            if (typeof errField === 'string') return errField;
+            if (errField != null) {
+                try { return JSON.stringify(errField); } catch { /* ignore */ }
+            }
+
+            if (typeof err === 'string') return err;
+
+            try { return JSON.stringify(err); } catch { return String(err); }
+        }
+
         function applyFilters() {
             const term = (currentSearchTerm || '').toLowerCase().trim();
             const dateFilter = currentDateFilter || '';
@@ -535,6 +557,7 @@
                 if (!term) return true;
 
                 const retryTextLower = getRetryStatusText(log).toLowerCase();
+                const errorTextLower = getErrorText(log).toLowerCase();
 
                 return (
                     log.business.name.toLowerCase().includes(term) ||
@@ -542,11 +565,7 @@
                     log.business.category.toLowerCase().includes(term) ||
                     log.messageType.toLowerCase().includes(term) ||
                     retryTextLower.includes(term) ||
-                    (log.result.error && (
-                        (log.result.error.response?.message && log.result.error.response.message.toLowerCase().includes(term)) ||
-                        (log.result.error.error && log.result.error.error.toLowerCase().includes(term)) ||
-                        JSON.stringify(log.result.error).toLowerCase().includes(term)
-                    ))
+                    errorTextLower.includes(term)
                 );
             });
 
