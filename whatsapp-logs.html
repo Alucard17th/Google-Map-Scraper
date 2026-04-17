@@ -297,6 +297,15 @@
                 applyFilters();
             });
 
+            // Allow pressing Enter to trigger filtering explicitly
+            document.getElementById('searchInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    currentSearchTerm = e.target.value || '';
+                    applyFilters();
+                }
+            });
+
             document.getElementById('dateFilter').addEventListener('change', function(e) {
                 currentDateFilter = e.target.value || '';
                 applyFilters();
