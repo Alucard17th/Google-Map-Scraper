@@ -2,14 +2,16 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { pathToFileURL } from 'url';
 
 // Load environment variables
 dotenv.config();
 
 class WhatsAppSender {
   constructor() {
-    this.apiKey = process.env.EVOLUTION_API_KEY;
-    this.apiUrl = process.env.EVOLUTION_API_URL || 'https://business.grow-with-tools.com/message/sendText/wa1';
+    this.apiKey = process.env.WAHA_API_KEY;
+    this.apiUrl = process.env.WAHA_API_URL || 'https://business.grow-with-tools.com/api/sendText';
+    this.session = process.env.WAHA_SESSION || 'default';
     this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
     this.yourName = process.env.YOUR_NAME || 'Your Name';
     this.yourPhone = process.env.YOUR_PHONE || '+33612345678';
@@ -99,33 +101,56 @@ class WhatsAppSender {
     }
   }
 
+  toWahaChatId(phone) {
+    if (!phone) return null;
+    const digitsOnly = String(phone).replace(/[^0-9]/g, '');
+    if (!digitsOnly) return null;
+    return `${digitsOnly}@c.us`;
+  }
+
   async sendWhatsAppMessage(number, message) {
     try {
+      if (!this.apiKey) {
+        throw new Error('Missing WAHA_API_KEY in environment');
+      }
+
+      const chatId = this.toWahaChatId(number);
+      if (!chatId) {
+        return { success: false, error: 'Invalid chatId from phone number', skip: true };
+      }
+
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.apiKey
+          'Accept': 'application/json',
+          'X-Api-Key': this.apiKey
         },
         body: JSON.stringify({
-          number: number,
+          session: this.session,
+          chatId: chatId,
           text: message
         })
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       
       if (response.ok) {
         console.log(`Message sent successfully to ${number}`);
         return { success: true, data: result };
       } else {
-        // Check if it's a non-WhatsApp user error
-        if (result.response && result.response.message && result.response.message[0]) {
-          const messageInfo = result.response.message[0];
-          if (messageInfo.exists === false) {
-            console.log(`Skipping ${number} - Not a WhatsApp user`);
-            return { success: false, error: 'Not a WhatsApp user', skip: true };
-          }
+        // Best-effort: treat known "not on WhatsApp" responses as skip
+        const errorText = JSON.stringify(result || {}).toLowerCase();
+        if (
+          errorText.includes('not a whatsapp user') ||
+          errorText.includes('not registered') ||
+          errorText.includes('is not registered') ||
+          errorText.includes('does not exist') ||
+          errorText.includes('invalid jid') ||
+          errorText.includes('exists":false')
+        ) {
+          console.log(`Skipping ${number} - Not a WhatsApp user`);
+          return { success: false, error: 'Not a WhatsApp user', skip: true };
         }
         
         console.error(`Failed to send message to ${number}:`, result);
@@ -466,7 +491,7 @@ class WhatsAppSender {
 }
 
 // CLI interface
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   const command = args[0];
   

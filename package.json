@@ -9,6 +9,8 @@
     "scraper": "node no-website-scraper.js",
     "screenshots": "node screenshot-generator.js",
     "whatsapp": "node whatsapp-sender.js",
+    "whatsapp-test-simple": "node whatsapp-sender.js test-simple",
+    "whatsapp-test": "node whatsapp-sender.js test",
     "whatsapp-cron": "node whatsapp-cron.js",
     "whatsapp-daily": "node whatsapp-cron.js run",
     "whatsapp-status": "node whatsapp-cron.js status",
